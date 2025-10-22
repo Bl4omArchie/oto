@@ -1,0 +1,356 @@
+:root {
+  --bg: #f5f7fa;
+  --card-bg: #fff;
+  --border: #e2e8f0;
+  --text: #1a202c;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --radius: 12px;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.sidebar {
+  width: 220px;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1rem;
+  box-shadow: 2px 0 6px rgba(0,0,0,0.05);
+}
+
+.sidebar h2 {
+  margin: 0 0 2rem;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.sidebar nav a {
+  display: block;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.sidebar nav a:hover,
+.sidebar nav a.active {
+  background: var(--accent-hover);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+header {
+  padding: 1.5rem 2rem;
+  background: var(--card-bg);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin-bottom: 1rem;
+}
+
+main {
+  padding: 2rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.3rem;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.card .form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.card input,
+.card select,
+.card textarea {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+  background-color: #f9fafb;
+  box-sizing: border-box;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.form input,
+.form select,
+.form textarea {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+  background-color: #f9fafb;
+}
+
+textarea {
+  min-height: 60px;
+  resize: none;
+}
+
+select[multiple] {
+  height: 120px;
+}
+
+.inline {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.scroll-box {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: #fff;
+}
+
+.scroll-box div {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+.scroll-box div:hover {
+  background: rgba(59,130,246,0.1);
+}
+
+.scroll-box div.selected {
+  background: var(--accent);
+  color: white;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.pagination button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.drop-area {
+  border: 2px dashed var(--accent);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  color: var(--accent);
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.drop-area.hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: var(--accent-hover);
+}
+
+#output {
+  background: #0f172a;
+  color: #00ff00;
+  padding: 1rem;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.9rem;
+  height: 200px;
+  white-space: pre-wrap;
+}
+
+footer {
+  text-align: center;
+  padding: 0.5rem 0;
+  background: #f1f5f9;
+  border-top: 1px solid var(--border);
+  color: #1a202c;
+}
+
+.exec-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.exec-info-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 1rem;
+  width: 260px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.exec-info-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.exec-info-card h2 {
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 0.25rem;
+}
+
+.exec-info-card .subtext {
+  color: #475569;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.exec-info-card small {
+  display: block;
+  color: #64748b;
+  font-size: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.exec-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0.8rem 0;
+}
+
+.stat-card {
+  flex: 1;
+  border-radius: 10px;
+  padding: 0.5rem 0.4rem;
+  color: white;
+  text-align: center;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-card p {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.stat-card.params { background: var(--success); }
+.stat-card.cmds { background: var(--warning); }
+
+.exec-info-card button {
+  margin-top: 0.5rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.exec-info-card button:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+}
+
+.info-badges {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.badge {
+  border-radius: 10px;
+  padding: 0.5rem 1rem;
+  color: white;
+  min-width: 60px;
+}
+
+.btn-settings {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.btn-settings:hover { background: #2563eb; }
+
+.badge-blue { background: #3b82f6; }
+.badge-green { background: #10b981; }
+.btn-exec { background: var(--accent); color: white; }
+.btn-exec:hover { background: var(--accent-hover); }
+
+.btn-param { background: var(--success); color: white; }
+.btn-param:hover { background: #059669; }
+
+.btn-cmd { background: var(--warning); color: white; }
+.btn-cmd:hover { background: #d97706; }

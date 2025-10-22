@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OTO</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <h2>OTO</h2>
+    <nav>
+      <a href="index.html" class="active">Dashboard</a>
+      <a href="execs.html" class="active">Executables</a>
+      <a href="settings.html" class="active">Settings</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header>
+      <h1>Executables</h1>
+      <p>Manage stored executables with their parameters, and commands</p>
+    </header>
+
+    <main>
+        <section class="card executable-card">
+          <h2>Create Executable</h2>
+          <div class="form">
+            <input id="exec_name" placeholder="Name">
+            <input id="exec_version" placeholder="Version">
+            <div id="binary-drop" class="drop-area">
+              <p>Drag & drop binary here or click to select</p>
+              <input type="file" id="exec_binary" hidden>
+            </div>
+            <textarea id="exec_description" placeholder="Description" maxlength="50"></textarea>
+            <button class="btn-exec" onclick="createExecutable()">Create Executable</button>
+          </div>
+        </section>
+      <div id="exec_cards_container" class="exec-cards"></div>
+    </main>
+
+    <footer>
+      <small>OTO web dashboard • Localhost Demo</small>
+    </footer>
+  </div>
+
+  <script src="api.js"></script>
+</body>
+</html>

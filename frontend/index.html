@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Executable Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <h2>OTO</h2>
+    <nav>
+      <a href="index.html" class="active">Dashboard</a>
+      <a href="execs.html" class="active">Executables</a>
+      <a href="settings.html" class="active">Settings</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header>
+      <h1>Dashboard</h1>
+      <p>Add new executables, parameters, and commands</p>
+    </header>
+
+    <main>
+      <div class="grid">
+        <!-- Executable Form -->
+        <section class="card executable-card">
+          <h2>Create Executable</h2>
+          <div class="form">
+            <input id="exec_name" placeholder="Name">
+            <input id="exec_version" placeholder="Version">
+            <div id="binary-drop" class="drop-area">
+              <p>Drag & drop binary here or click to select</p>
+              <input type="file" id="exec_binary" hidden>
+            </div>
+            <textarea id="exec_description" placeholder="Description" maxlength="50"></textarea>
+            <button class="btn-exec" onclick="createExecutable()">Create Executable</button>
+          </div>
+        </section>
+
+        <!-- Parameter Form -->
+        <section class="card parameter-card">
+          <h2>Create Parameter</h2>
+          <div class="form">
+            <input id="param_flag" placeholder="Flag">
+
+            <label for="param_execid_select">Exec ID</label>
+            <select id="param_execid_select">
+              <option value="">-- Select Executable --</option>
+            </select>
+
+            <div class="inline">
+              <label><input type="checkbox" id="param_root"> Requires Root</label>
+              <label><input type="checkbox" id="param_value"> Requires Value</label>
+            </div>
+
+            <label for="param_valuetype">Value Type</label>
+            <select id="param_valuetype">
+              <option value="">-- Select --</option>
+            </select>
+
+            <textarea id="param_description" placeholder="Description"></textarea>
+            <button class="btn-param" onclick="createParameter()">Create Parameter</button>
+          </div>
+        </section>
+
+        <!-- Command Form -->
+        <section class="card command-card">
+          <h2>Create Command</h2>
+          <div class="form">
+            <input id="cmd_name" placeholder="Name">
+
+            <label for="cmd_execid">Exec ID</label>
+            <select id="cmd_execid">
+              <option value="">-- Select Executable --</option>
+            </select>
+
+            <label for="cmd_params_search">Parameter Flags</label>
+            <input type="text" id="cmd_params_search" placeholder="Search flags..." oninput="filterCmdParams()">
+
+            <div id="cmd_params_box" class="scroll-box">
+              <option value="">-sL</option>
+              <option value="">-sT</option>
+              <option value="">-A</option>
+              <option value="">-sV</option>
+              <option value="">-sL</option>
+              <option value="">-sT</option>
+              <option value="">-A</option>
+              <option value="">-sV</option>
+              <option value="">-sL</option>
+              <option value="">-sT</option>
+              <option value="">-A</option>
+              <option value="">-sV</option>
+            </div>
+
+            <div class="pagination">
+              <button id="prev_page" onclick="changePage(-1)">Prev</button>
+              <span id="page_info">1/1</span>
+              <button id="next_page" onclick="changePage(1)">Next</button>
+            </div>
+
+
+            <textarea id="cmd_description" placeholder="Description"></textarea>
+            <button class="btn-cmd" onclick="createCommand()">Create Command</button>
+          </div>
+        </section>
+      </div>
+
+
+      <section class="card fullwidth">
+        <h2>API Response</h2>
+        <pre id="output"></pre>
+      </section>
+    </main>
+
+    <footer>
+      <small>OTO web dashboard • Localhost Demo</small>
+    </footer>
+  </div>
+
+  <script src="api.js"></script>
+</body>
+</html>
