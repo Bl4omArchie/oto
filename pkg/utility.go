@@ -1,4 +1,4 @@
-package oto
+package pkg
 
 import (
 	"fmt"

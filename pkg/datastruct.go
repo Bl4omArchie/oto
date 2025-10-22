@@ -1,4 +1,4 @@
-package oto
+package pkg
 
 import (
 	"fmt"
@@ -87,7 +87,7 @@ func NewExecutable(exec_name string, version string, binaryPath string, descript
 		Binary: binaryPath,
 		Description: description,
 	}
-	conf.Database.Create(exec)
+	conf.Database.otoDb.Create(exec)
 	return exec, nil
 }
 

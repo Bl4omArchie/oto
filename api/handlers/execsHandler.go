@@ -7,13 +7,12 @@ import (
 )
 
 func GetExecutables(oto *pkg.Oto) {
-	oto.Database.
+	
 }
 
 func GetExecutable() {
-	pkg.
+	
 }
-
 
 func GetCommands() {
 	

@@ -1,4 +1,4 @@
-package oto
+package db
 
 import (
     "fmt"
@@ -25,24 +25,24 @@ func OpenDatabase(dbPath string) (*OtoDB, error) {
 }
 
 
-func (db *OtoDB) Migrate(values ...any) {
-	db.otoDb.AutoMigrate(values)
+func (odb *OtoDB) Migrate(values ...any) {
+	odb.otoDb.AutoMigrate(values)
 }
 
 
 // get a specific value from a given row and column 
-func (db *OtoDB) GetBy(key string, value string) (*any, error) {
+func (odb *OtoDB) GetBy(key string, value string) (*any, error) {
 	var table any
-    if err := db.otoDb.First(&table, fmt.Sprintf("%s = ?", key), value).Error; err != nil {
+    if err := odb.otoDb.First(&table, fmt.Sprintf("%s = ?", key), value).Error; err != nil {
         return nil, fmt.Errorf("Invalid inputs : %w", err)
     }
     return &table, nil
 }
 
 // for a given row, update a value from a given column
-func (db *OtoDB) UpdateTabl(key string, value string, newColumn string, newValue string) (*any, error) {
+func (odb *OtoDB) UpdateTable(key string, value string, newColumn string, newValue string) (*any, error) {
     var table any
-    if err := db.otoDb.Model(&table).
+    if err := odb.otoDb.Model(&table).
         Where(fmt.Sprintf("%s = ?", key), value).
         Update(newColumn, newValue); err  != nil {
             return nil, fmt.Errorf("Couldn't update the row : %s with value %s", key, value)

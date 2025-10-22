@@ -1,4 +1,4 @@
-package oto
+package pkg
 
 import (
 	"fmt"
@@ -29,7 +29,7 @@ func OpenOto(dbPath string) (*Oto, error) {
 }
 
 func (oto *Oto) RefreshOto() {
-	oto.Database.migrate(&Executable{}, &Parameter{}, &Command{})
+	oto.Database.Migrate(&Executable{}, &Parameter{}, &Command{})
 }
 
 func (oto *Oto) NewJob(jobName string, executableId string, commandName string) error {
