@@ -3,7 +3,7 @@ package main
 import (
     "fmt"
     "github.com/Bl4omArchie/oto/pkg"
-	"github.com/Bl4omArchie/oto/api"
+    "github.com/Bl4omArchie/oto/api"
 )
 
 func StartApi(cfg *pkg.Oto) {
