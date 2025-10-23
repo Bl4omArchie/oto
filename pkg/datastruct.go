@@ -87,7 +87,7 @@ func NewExecutable(exec_name string, version string, binaryPath string, descript
 		Binary: binaryPath,
 		Description: description,
 	}
-	conf.Database.otoDb.Create(exec)
+	conf.Database.Create(exec)
 	return exec, nil
 }
 

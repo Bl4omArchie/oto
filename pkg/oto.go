@@ -6,12 +6,13 @@ import (
     "os/exec"
 	"encoding/json"
 
+	"gorm.io/gorm"
 	"github.com/Bl4omArchie/oto/db"
 )
 
 
 type Oto struct {
-	Database *db.OtoDB
+	Database *gorm.DB
 	Jobs 	 map[string]*JobCmd
 }
 
@@ -29,16 +30,17 @@ func OpenOto(dbPath string) (*Oto, error) {
 }
 
 func (oto *Oto) RefreshOto() {
-	oto.Database.Migrate(&Executable{}, &Parameter{}, &Command{})
+	db.Migrate(oto.Database, &Executable{}, &Parameter{}, &Command{})
 }
 
 func (oto *Oto) NewJob(jobName string, executableId string, commandName string) error {
-	exec, err := oto.Database.GetBy[Executable]("exec_id", executableId)
+
+	exec, err := db.GetBy[Executable](oto.Database, "exec_id", executableId)
 	if err != nil {
 		return fmt.Errorf("Couldn't find executable : %s", executableId)
 	}
 
-	cmd, err := oto.Database.GetBy[Command]("name", commandName)
+	cmd, err := db.GetBy[Command](oto.Database, "name", commandName)
 	if err != nil {
 		return fmt.Errorf("Couldn't find command : %s", commandName)
 	}
@@ -71,7 +73,7 @@ func (oto *Oto) ExecuteJob(jobName string, values map[string]string) error {
 	}
 
 	for _, flag := range flags {
-		param, err := oto.Database.GetBy[Parameter]("flag", string(flag))
+		param, err := db.GetBy[Parameter](oto.Database, "flag", string(flag))
 		if err != nil {
 			return fmt.Errorf("Incorrect parameter flag : %w", err)
 		}

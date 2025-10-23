@@ -8,11 +8,8 @@ import (
     "gorm.io/driver/sqlite"
 )
 
-type OtoDB struct {
-    otoDb *gorm.DB
-}
 
-func OpenDatabase(dbPath string) (*OtoDB, error) {
+func OpenDatabase(dbPath string) (*gorm.DB, error) {
 	absPath, err := filepath.Abs(dbPath)
 	if err != nil {
 		return nil, fmt.Errorf("Incorrect path : %s", dbPath)
@@ -21,31 +18,37 @@ func OpenDatabase(dbPath string) (*OtoDB, error) {
 	if err != nil {
 		return nil, err
 	}
-    return &OtoDB{otoDb: db}, nil
+    return db, nil
 }
 
-
-func (odb *OtoDB) Migrate(values ...any) {
-	odb.otoDb.AutoMigrate(values)
+func Migrate(odb *gorm.DB, models ...any) error {
+    err := odb.AutoMigrate(models...)
+    return err
 }
 
-
-// get a specific value from a given row and column 
-func (odb *OtoDB) GetBy(key string, value string) (*any, error) {
-	var table any
-    if err := odb.otoDb.First(&table, fmt.Sprintf("%s = ?", key), value).Error; err != nil {
-        return nil, fmt.Errorf("Invalid inputs : %w", err)
-    }
-    return &table, nil
+func GetBy[T any](odb *gorm.DB, key string, value string) (*T, error) {
+	var model T
+	if err := odb.First(&model, fmt.Sprintf("%s = ?", key), value).Error; err != nil {
+		return nil, fmt.Errorf("invalid inputs: %w", err)
+	}
+	return &model, nil
 }
 
-// for a given row, update a value from a given column
-func (odb *OtoDB) UpdateTable(key string, value string, newColumn string, newValue string) (*any, error) {
-    var table any
-    if err := odb.otoDb.Model(&table).
-        Where(fmt.Sprintf("%s = ?", key), value).
-        Update(newColumn, newValue); err  != nil {
-            return nil, fmt.Errorf("Couldn't update the row : %s with value %s", key, value)
-        }
-        return &table, nil
+func GetTable[T any](odb *gorm.DB) ([]*T, error) {
+	var model []*T
+	if err := odb.Find(&model).Error; err != nil {
+		return nil, fmt.Errorf("invalid inputs: %w", err)
+	}
+	return model, nil
 }
+
+func UpdateTable[T any](odb *gorm.DB, key string, value string, newColumn string, newValue string) (*T, error) {
+	var model T
+	if err := odb.Model(&model).
+		Where(fmt.Sprintf("%s = ?", key), value).
+		Update(newColumn, newValue).Error; err != nil {
+		return nil, fmt.Errorf("couldn't update row %s = %s: %w", key, value, err)
+	}
+	return &model, nil
+}
+
