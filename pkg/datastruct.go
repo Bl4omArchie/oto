@@ -25,7 +25,7 @@ const (
 	Done	  JobStatus = "done"
 )
 
-type ExportedJsonConfig struct {
+type ExportedJsoncfgig struct {
 	Executables []Executable	`json:"executables"`
 	Parameters []Parameter		`json:"parameters"`
 	Commands []Command			`json:"commands"`
@@ -38,7 +38,7 @@ type Executable struct {
 	Name        string `gorm:"not null type:string" json:"name" validate:"required"`
 	Version     string `gorm:"not null type:string" json:"version" validate:"required"`
 	Binary      string `gorm:"not null type:string" json:"binary" validate:"required"`
-	Description string `json:"description type:string" validate:"omitempty"`
+	Description string `gorm:"not null type:string" json:"description" validate:"required"`
 }
 
 type Parameter struct {
@@ -49,9 +49,9 @@ type Parameter struct {
 	RequiresRoot     bool       	`gorm:"not null type:bool" json:"requires_root type:bool" validate:"required"`
 	RequiresValue    bool       	`gorm:"not null type:bool" json:"requires_value type:bool" validate:"required"`
 	ValueType        ValueType  	`gorm:"not null" json:"value_type" validate:"omitempty"`
-	DependsOn     	 datatypes.JSON `gorm:"type:json"`
-	ConflictWith  	 datatypes.JSON `gorm:"type:json"`
-	Description      string    		`gorm:"type:string" json:"description,omitempty"`
+	DependsOn     	 datatypes.JSON `gorm:"type:json" json:"depends_on" validate:"omitempty"`
+	conflictWith  	 datatypes.JSON `gorm:"type:json" json:"conflict_with" validate:"omitempty"`
+	Description      string    		`gorm:"type:string" json:"description" validate:"omitempty"`
 }
 
 type Command struct {
@@ -78,27 +78,27 @@ type Output struct {
 }
 
 
-func NewExecutable(exec_name string, version string, binaryPath string, description string, conf *Oto) (*Executable, error) {
-	execId := GetExecId(exec_name, version)
+func NewExecutable(name, version, binaryPath, description string, cfg *Oto) (*Executable, error) {
+	execId := GetExecId(name, version)
 	exec := &Executable {
 		ExecId: execId,
-		Name: exec_name,
+		Name: name,
 		Version: version,
 		Binary: binaryPath,
 		Description: description,
 	}
-	conf.Database.Create(exec)
+	cfg.Database.Create(exec)
 	return exec, nil
 }
 
-func NewCommand(execId string, cmdName, description string, flags []string, conf *Oto) (*Command, error) {
+func NewCommand(execId, cmdName, description string, flags []string, cfg *Oto) (*Command, error) {
 	flagsBytes, err := SliceToJson(flags)
 	if err != nil {
 		return nil, fmt.Errorf("Couldn't convert flags to json")
 	}
 
 	var params []Parameter
-	if err := conf.Database.
+	if err := cfg.Database.
 		Where("flag IN ?", flags).
 		Find(&params).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch parameters: %w", err)
@@ -119,20 +119,20 @@ func NewCommand(execId string, cmdName, description string, flags []string, conf
 		ParameterFlags: flagsBytes,
 		RequiresRoot: requiresRoot,
 	}
-	if err := conf.Database.Create(cmd).Error; err != nil {
+	if err := cfg.Database.Create(cmd).Error; err != nil {
 		return nil, fmt.Errorf("failed to create command: %w", err)
 	}
 	return cmd, nil
 }
 
-func NewParameter(execId string, flag string, description string, reqRoot bool, reqValue bool, valueType ValueType, dependsOn []string, conflictWith []string, conf *Oto) (*Parameter, error) {
+func NewParameter(execId, flag, description string, reqRoot, reqValue bool, valueType ValueType, dependsOn []string, cfglictWith []string, cfg *Oto) (*Parameter, error) {
 	dependsOnBytes, err := SliceToJson(dependsOn)
 	if err != nil {
 		return nil, fmt.Errorf("Couldn't convert dependsOn to json")
 	}
-	conflictWithBytes, err := SliceToJson(conflictWith)
+	cfglictWithBytes, err := SliceToJson(cfglictWith)
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't convert conflictWith to json")
+		return nil, fmt.Errorf("Couldn't convert cfglictWith to json")
 	}
 	
 	param := &Parameter{
@@ -143,8 +143,12 @@ func NewParameter(execId string, flag string, description string, reqRoot bool, 
 		RequiresValue: reqValue,
 		ValueType: valueType,
 		DependsOn: dependsOnBytes,
-		ConflictWith: conflictWithBytes,
+		cfglictWith: cfglictWithBytes,
 	}
-	conf.Database.Create(param)
+	cfg.Database.Create(param)
 	return param, nil
+}
+
+func AllValueTypes() []ValueType {
+	return []ValueType{Integer, String, Tuple, FilePath, Float, IPAddress, Port}
 }

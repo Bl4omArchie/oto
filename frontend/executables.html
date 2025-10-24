@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OTO Dashboard - Home</title>
+  <title>OTO Dashboard - Executables</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="app.js" defer></script>
 </head>
 <body class="flex h-screen bg-gray-100">
 
@@ -19,13 +20,8 @@
 
   <!-- Main Content -->
   <main class="flex-1 p-6">
-    <h2 class="text-2xl font-semibold mb-2">Welcome to OTO Dashboard</h2>
-    <nav class="mb-6">
-      <ol class="flex text-gray-600 text-sm space-x-2">
-        <li>Home</li>
-      </ol>
-    </nav>
-    <p class="text-gray-700">This is the main dashboard page.</p>
+    <h2 class="text-2xl font-semibold mb-4">Executables</h2>
+    <div id="exec-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"></div>
   </main>
 
 </body>

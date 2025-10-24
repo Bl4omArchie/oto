@@ -8,59 +8,38 @@ import (
 	"github.com/Bl4omArchie/oto/pkg"
 )
 
-
-func GetExecutables(c *gin.Context, oto *pkg.Oto) {
-	execs, err := db.GetTable[pkg.Executable](oto.Database)
+func CreateExecutable(name, version, binary, description string, c *gin.Context, cfg *pkg.Oto) {
+	exec, err := pkg.NewExecutable(name, version, binary, description, cfg)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, execs)
-}
-
-
-func GetCommands(c *gin.Context, oto *pkg.Oto) {
-	execs, err := db.GetTable[pkg.Command](oto.Database)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, execs)
-}
-
-
-func GetParameters(c *gin.Context, oto *pkg.Oto) {
-	execs, err := db.GetTable[pkg.Parameter](oto.Database)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, execs)
-}
-
-func GetExecutable(key string, value string, c *gin.Context, oto *pkg.Oto) {
-	exec, err := db.GetBy[pkg.Executable](oto.Database, key, value)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't create executable: ": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, exec)
 }
 
-func GetParameter(key string, value string, c *gin.Context, oto *pkg.Oto) {
-	param, err := db.GetBy[pkg.Parameter](oto.Database, key, value)
+func GetExecutables(c *gin.Context, cfg *pkg.Oto) {
+	execs, err := db.GetTable[pkg.Executable](cfg.Database)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get executables": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, param)
+	c.JSON(http.StatusOK, execs)
 }
 
-func GetCommand(key string, value string, c *gin.Context, oto *pkg.Oto) {
-	cmd, err := db.GetBy[pkg.Command](oto.Database, key, value)
+func GetExecutable(execId string, c *gin.Context, cfg *pkg.Oto) {
+	exec, err := db.GetBy[pkg.Executable](cfg.Database, "exec_id", execId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get executable": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, cmd)
+	c.JSON(http.StatusOK, exec)
+}
+
+func GetExecutableInfo(execId string, c *gin.Context, cfg *pkg.Oto) {
+	exec, err := db.GetBy[pkg.Executable](cfg.Database, "exec_id", execId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get executable info": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, exec)
 }

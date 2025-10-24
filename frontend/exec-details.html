@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OTO Dashboard - Home</title>
+  <title>OTO Dashboard - Commands</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="app.js" defer></script>
 </head>
 <body class="flex h-screen bg-gray-100">
 
-  <!-- Sidebar -->
   <aside class="w-56 bg-blue-600 text-white flex flex-col">
     <h1 class="text-center text-2xl font-semibold py-6">OTO</h1>
     <nav class="flex flex-col px-4 space-y-2">
@@ -17,15 +17,17 @@
     </nav>
   </aside>
 
-  <!-- Main Content -->
   <main class="flex-1 p-6">
-    <h2 class="text-2xl font-semibold mb-2">Welcome to OTO Dashboard</h2>
     <nav class="mb-6">
       <ol class="flex text-gray-600 text-sm space-x-2">
-        <li>Home</li>
+        <li><a href="executables.html" class="hover:underline">Executables</a></li>
+        <li id="current-exec" class="font-semibold"></li>
       </ol>
     </nav>
-    <p class="text-gray-700">This is the main dashboard page.</p>
+
+    <h2 id="details-title" class="text-2xl font-semibold mb-4"></h2>
+
+    <div id="commands-container" class="space-y-4"></div>
   </main>
 
 </body>
