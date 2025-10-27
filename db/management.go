@@ -51,4 +51,3 @@ func UpdateTable[T any](odb *gorm.DB, key string, value string, newColumn string
 	}
 	return &model, nil
 }
-

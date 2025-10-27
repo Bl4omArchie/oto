@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
 	"github.com/Bl4omArchie/oto/pkg"
+	"github.com/Bl4omArchie/oto/models"
 	"github.com/Bl4omArchie/oto/api/handlers"
 )
 
@@ -56,7 +57,7 @@ func SetupRouter(cfg *pkg.Oto) *gin.Engine {
 	})
 
     r.POST("/execs", func(c *gin.Context) {
-		var exec pkg.Executable
+		var exec models.Executable
 		if err := c.ShouldBindJSON(&exec); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -65,7 +66,7 @@ func SetupRouter(cfg *pkg.Oto) *gin.Engine {
 	})
 
     r.POST("/params", func(c *gin.Context) {
-		var param pkg.Parameter
+		var param models.Parameter
 		if err := c.ShouldBindJSON(&param); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -74,7 +75,7 @@ func SetupRouter(cfg *pkg.Oto) *gin.Engine {
 	})
 
     r.POST("/cmds", func(c *gin.Context) {
-		var cmd pkg.Command
+		var cmd models.Command
 		if err := c.ShouldBindJSON(&cmd); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return

@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OTO Dashboard - Executables</title>
+  <title>OTO Dashboard - Parameters</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="app.js" defer></script>
+  <script src="static/app.js" defer></script>
+  <link rel="stylesheet" href="static/styles.css">
 </head>
 <body class="flex h-screen bg-gray-100">
 
-  <!-- Sidebar -->
   <aside class="w-56 bg-blue-600 text-white flex flex-col">
     <h1 class="text-center text-2xl font-semibold py-6">OTO</h1>
     <nav class="flex flex-col px-4 space-y-2">
@@ -18,10 +18,16 @@
     </nav>
   </aside>
 
-  <!-- Main Content -->
   <main class="flex-1 p-6">
-    <h2 class="text-2xl font-semibold mb-4">Executables</h2>
-    <div id="exec-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"></div>
+    <nav class="mb-6">
+      <ol class="flex text-gray-600 text-sm space-x-2">
+        <li><a href="executables.html" class="hover:underline">Executables</a></li>
+        <li id="current-exec-param" class="font-semibold"></li>
+      </ol>
+    </nav>
+
+    <h2 id="parameters-title" class="text-2xl font-semibold mb-4"></h2>
+    <div id="parameters-container" class="space-y-4"></div>
   </main>
 
 </body>
