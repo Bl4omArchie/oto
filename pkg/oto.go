@@ -12,12 +12,12 @@ import (
 	"github.com/Bl4omArchie/oto/models"
 )
 
-type Oto struct {
+type Config struct {
 	Database *gorm.DB
 	TemporalClient client.Client
 }
 
-func NewInstanceOto(dbPath string) (*Oto, error) {
+func NewInstanceOto(dbPath string) (*Config, error) {
 	db, err := simple.OpenDatabase(simple.GetSqlite(dbPath))
 	if err != nil {
 		return nil, err
@@ -28,23 +28,23 @@ func NewInstanceOto(dbPath string) (*Oto, error) {
 		return nil, err
 	}
 
-	oto := &Oto{
+	cfg := &Config{
 		Database: db,
 		TemporalClient: client,
 	}
-	oto.Database.AutoMigrate(&models.Executable{}, &models.Parameter{}, &models.Command{}, &models.JobCommand{}, &models.FlagValue{})
-	return oto, nil
+	cfg.Database.AutoMigrate(&models.Executable{}, &models.Parameter{}, &models.Command{}, &models.JobCommand{}, &models.FlagValue{})
+	return cfg, nil
 }
 
-func (oto *Oto) AddCommand(ctx context.Context, execID, cmdName, description string, flags []string) error {
-	exec, err := simple.GetRowBy[models.Executable](ctx, oto.Database, "exec_id", execID)
+func (cfg *Config) AddCommand(ctx context.Context, execID, cmdName, description string, flags []string) error {
+	exec, err := simple.GetRowBy[models.Executable](ctx, cfg.Database, "exec_id", execID)
 	if err != nil {
 		return fmt.Errorf("exec ID : %s, doesn't exist : %w", execID, err)
 	}
 
 	var flagsToSave []*models.Parameter
 	for _, flag := range flags {
-		param, err := simple.GetRowBy[models.Parameter](ctx, oto.Database, "flag", flag)
+		param, err := simple.GetRowBy[models.Parameter](ctx, cfg.Database, "flag", flag)
 		if err != nil {
 			return fmt.Errorf("param flag : %s, doesn't exist. %w", flag, err)
 		}
@@ -52,22 +52,22 @@ func (oto *Oto) AddCommand(ctx context.Context, execID, cmdName, description str
 	}
 
 	cmd := models.NewCommand(cmdName, description, exec, flagsToSave)
-	if err := oto.Database.Save(cmd).Error; err != nil {
+	if err := cfg.Database.Save(cmd).Error; err != nil {
 		return fmt.Errorf("failed to save command: %w", err)
 	}
 	return nil
 }
 
 // TODO : verify key-value pairs if flags are correct
-func (oto *Oto) AddJobCommand(ctx context.Context, execID, cmdName, jobName string, flagValues map[string]string) error {
+func (cfg *Config) AddJobCommand(ctx context.Context, execID, cmdName, jobName string, flagValues map[string]string) error {
 	var header string
 
-	exec, err := simple.GetRowBy[models.Executable](ctx, oto.Database, "exec_id", execID)
+	exec, err := simple.GetRowBy[models.Executable](ctx, cfg.Database, "exec_id", execID)
 	if err != nil {
 		return fmt.Errorf("exec with ID : %s, doesn't exist : %w", execID, err)
 	}
 
-	cmd, err := simple.GetRowBy[models.Command](ctx, oto.Database, "name", cmdName)
+	cmd, err := simple.GetRowBy[models.Command](ctx, cfg.Database, "name", cmdName)
 	if err != nil {
 		return fmt.Errorf("command with name : %s, doesn't exist : %w", cmdName, err)
 	}
@@ -83,52 +83,52 @@ func (oto *Oto) AddJobCommand(ctx context.Context, execID, cmdName, jobName stri
 	}
 
 	job := models.NewJobCommand(jobName, header, flagValuesToSave)
-	if err := oto.Database.Save(job).Error; err != nil {
+	if err := cfg.Database.Save(job).Error; err != nil {
 		return fmt.Errorf("failed to save job command: %w", err)
 	}
 	return nil
 }
 
-func (oto *Oto) AddExecutable(name, version, binaryPath, description string) error {
+func (cfg *Config) AddExecutable(name, version, binaryPath, description string) error {
 	exec := models.NewExecutable(name, version, binaryPath, description)
-	if err := oto.Database.Save(exec).Error; err != nil {
+	if err := cfg.Database.Save(exec).Error; err != nil {
 		return fmt.Errorf("failed to save executable: %w", err)
 	}
 
 	return nil
 }
 
-func (oto *Oto) AddParameter(ctx context.Context, execID, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, conflictsWith, dependsOn []string) error {
-	exec, err := simple.GetRowBy[models.Executable](ctx, oto.Database, "exec_id", execID)
+func (cfg *Config) AddParameter(ctx context.Context, execID, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, conflictsWith, dependsOn []string) error {
+	exec, err := simple.GetRowBy[models.Executable](ctx, cfg.Database, "exec_id", execID)
 	if err != nil {
 		return fmt.Errorf("exec with ID : %s, doesn't exist : %w", execID, err)
 	}
 
-	conflictsWithToSave, err := oto.FetchParameters(ctx, conflictsWith)
+	conflictsWithToSave, err := cfg.FetchParameters(ctx, conflictsWith)
 	if err != nil {
 		return err
 	}
 
-	dependsOnToSave, err := oto.FetchParameters(ctx, dependsOn)
+	dependsOnToSave, err := cfg.FetchParameters(ctx, dependsOn)
 	if err != nil {
 		return err
 	}
 
 	param := models.NewParameter(flag, description, exec, requiresRoot, requiresValue, valueType, conflictsWithToSave, dependsOnToSave)
-	if err := oto.Database.Save(param).Error; err != nil {
+	if err := cfg.Database.Save(param).Error; err != nil {
 		return fmt.Errorf("failed to parameter : %w", err)
 	}
 	return nil
 }
 
-func (oto *Oto) FetchParameters(ctx context.Context, flags []string) ([]*models.Parameter, error) {
+func (cfg *Config) FetchParameters(ctx context.Context, flags []string) ([]*models.Parameter, error) {
     if ctx == nil {
         ctx = context.Background()
     }
 
     var result []*models.Parameter
     for _, f := range flags {
-        param, err := simple.GetRowBy[models.Parameter](ctx, oto.Database, "flag", f)
+        param, err := simple.GetRowBy[models.Parameter](ctx, cfg.Database, "flag", f)
         if err != nil {
             return nil, fmt.Errorf("parameter flag %s doesn't exist: %w", f, err)
         }
@@ -137,16 +137,16 @@ func (oto *Oto) FetchParameters(ctx context.Context, flags []string) ([]*models.
     return result, nil
 }
 
-func (oto *Oto) RunJobCommand(ctx context.Context, jobName string) (*models.RunCommandOutput, error) {
+func (cfg *Config) RunJobCommand(ctx context.Context, jobName string) (*models.RunCommandOutput, error) {
 	var args []string
 
-	job, err := simple.GetRowBy[models.JobCommand](ctx, oto.Database, "name", jobName)
+	job, err := simple.GetRowBy[models.JobCommand](ctx, cfg.Database, "name", jobName)
 	if err != nil {
 		return nil, err
 	}
 
 	var flags []*models.FlagValue
-	err = oto.Database.Model(&job).Association("FlagValues").Find(&flags)
+	err = cfg.Database.Model(&job).Association("FlagValues").Find(&flags)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't retrieve the flag values of job command : %s. %w", jobName, err)
 	}

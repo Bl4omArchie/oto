@@ -242,16 +242,3 @@ func shortestPath(g *core.Graph, from, to models.FlagID) []models.FlagID {
 	}
 	return path
 }
-
-func demoOTOSchema() {
-	schema := NewSchema([]models.FlagID{"a", "b", "c", "d", "e"})
-	schema.Require("a", "b")
-	schema.Require("b", "c")
-
-	fmt.Println(schema.ValidateSchema())
-
-}
-
-func main() {
-	demoOTOSchema()
-}
