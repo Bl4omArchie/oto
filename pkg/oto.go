@@ -1,19 +1,19 @@
 package oto
 
 import (
-	"fmt"
 	"bytes"
 	"context"
+	"fmt"
 	"os/exec"
 
-	"gorm.io/gorm"
-	"go.temporal.io/sdk/client"
-	"github.com/Bl4omArchie/simple"
 	"github.com/Bl4omArchie/oto/models"
+	"github.com/Bl4omArchie/simple"
+	"go.temporal.io/sdk/client"
+	"gorm.io/gorm"
 )
 
 type Config struct {
-	Database *gorm.DB
+	Database       *gorm.DB
 	TemporalClient client.Client
 }
 
@@ -29,17 +29,17 @@ func NewInstanceOto(dbPath string) (*Config, error) {
 	}
 
 	cfg := &Config{
-		Database: db,
+		Database:       db,
 		TemporalClient: client,
 	}
-	cfg.Database.AutoMigrate(&models.Executable{}, &models.Parameter{}, &models.Command{}, &models.JobCommand{}, &models.FlagValue{})
+	cfg.Database.AutoMigrate(&models.Binary{}, &models.Parameter{}, &models.Command{}, &models.Job{}, &models.FlagValue{})
 	return cfg, nil
 }
 
-func (cfg *Config) AddCommand(ctx context.Context, execID, cmdName, description string, flags []string) error {
-	exec, err := simple.GetRowBy[models.Executable](ctx, cfg.Database, "exec_id", execID)
+func (cfg *Config) AddCommand(ctx context.Context, binID, cmdName, description string, flags []string) error {
+	bin, err := simple.GetRowBy[models.Binary](ctx, cfg.Database, "tag", binID)
 	if err != nil {
-		return fmt.Errorf("exec ID : %s, doesn't exist : %w", execID, err)
+		return fmt.Errorf("bin ID : %s, doesn't exist : %w", binID, err)
 	}
 
 	var flagsToSave []*models.Parameter
@@ -51,7 +51,7 @@ func (cfg *Config) AddCommand(ctx context.Context, execID, cmdName, description 
 		flagsToSave = append(flagsToSave, param)
 	}
 
-	cmd := models.NewCommand(cmdName, description, exec, flagsToSave)
+	cmd := models.NewCommand(cmdName, description, bin, flagsToSave)
 	if err := cfg.Database.Save(cmd).Error; err != nil {
 		return fmt.Errorf("failed to save command: %w", err)
 	}
@@ -59,12 +59,12 @@ func (cfg *Config) AddCommand(ctx context.Context, execID, cmdName, description 
 }
 
 // TODO : verify key-value pairs if flags are correct
-func (cfg *Config) AddJobCommand(ctx context.Context, execID, cmdName, jobName string, flagValues map[string]string) error {
+func (cfg *Config) AddJob(ctx context.Context, binID, cmdName, jobName string, flagValues map[string]string) error {
 	var header string
 
-	exec, err := simple.GetRowBy[models.Executable](ctx, cfg.Database, "exec_id", execID)
+	bin, err := simple.GetRowBy[models.Binary](ctx, cfg.Database, "tag", binID)
 	if err != nil {
-		return fmt.Errorf("exec with ID : %s, doesn't exist : %w", execID, err)
+		return fmt.Errorf("binary with ID : %s, doesn't exist : %w", binID, err)
 	}
 
 	cmd, err := simple.GetRowBy[models.Command](ctx, cfg.Database, "name", cmdName)
@@ -72,34 +72,34 @@ func (cfg *Config) AddJobCommand(ctx context.Context, execID, cmdName, jobName s
 		return fmt.Errorf("command with name : %s, doesn't exist : %w", cmdName, err)
 	}
 
-	header = exec.Binary
+	header = bin.Path
 	if cmd.RequiresRoot {
 		header = "sudo " + header
-	} 
+	}
 
 	var flagValuesToSave []*models.FlagValue
 	for flag, value := range flagValues {
 		flagValuesToSave = append(flagValuesToSave, models.NewFlagValue(flag, value))
 	}
 
-	job := models.NewJobCommand(jobName, header, flagValuesToSave)
+	job := models.NewJob(jobName, bin, cmd, flagValuesToSave)
 	if err := cfg.Database.Save(job).Error; err != nil {
 		return fmt.Errorf("failed to save job command: %w", err)
 	}
 	return nil
 }
 
-func (cfg *Config) AddExecutable(name, version, binaryPath, description string) error {
-	exec := models.NewExecutable(name, version, binaryPath, description)
-	if err := cfg.Database.Save(exec).Error; err != nil {
-		return fmt.Errorf("failed to save executable: %w", err)
+func (cfg *Config) AddBinary(name, version, binaryPath, description string) error {
+	bin := models.NewBinary(name, version, binaryPath, description)
+	if err := cfg.Database.Save(bin).Error; err != nil {
+		return fmt.Errorf("failed to save Binary: %w", err)
 	}
 
 	return nil
 }
 
 func (cfg *Config) AddParameter(ctx context.Context, execID, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, conflictsWith, dependsOn []string) error {
-	exec, err := simple.GetRowBy[models.Executable](ctx, cfg.Database, "exec_id", execID)
+	exec, err := simple.GetRowBy[models.Binary](ctx, cfg.Database, "tag", execID)
 	if err != nil {
 		return fmt.Errorf("exec with ID : %s, doesn't exist : %w", execID, err)
 	}
@@ -121,26 +121,11 @@ func (cfg *Config) AddParameter(ctx context.Context, execID, flag, description s
 	return nil
 }
 
-func (cfg *Config) FetchParameters(ctx context.Context, flags []string) ([]*models.Parameter, error) {
-    if ctx == nil {
-        ctx = context.Background()
-    }
-
-    var result []*models.Parameter
-    for _, f := range flags {
-        param, err := simple.GetRowBy[models.Parameter](ctx, cfg.Database, "flag", f)
-        if err != nil {
-            return nil, fmt.Errorf("parameter flag %s doesn't exist: %w", f, err)
-        }
-        result = append(result, param)
-    }
-    return result, nil
-}
-
-func (cfg *Config) RunJobCommand(ctx context.Context, jobName string) (*models.RunCommandOutput, error) {
+func (cfg *Config) RunJob(ctx context.Context, jobName string) (*models.RunCommandOutput, error) {
+	var header string
 	var args []string
 
-	job, err := simple.GetRowBy[models.JobCommand](ctx, cfg.Database, "name", jobName)
+	job, err := models.GetJobFromDB(ctx, cfg.Database, jobName)
 	if err != nil {
 		return nil, err
 	}
@@ -151,12 +136,15 @@ func (cfg *Config) RunJobCommand(ctx context.Context, jobName string) (*models.R
 		return nil, fmt.Errorf("couldn't retrieve the flag values of job command : %s. %w", jobName, err)
 	}
 
+	if job.Command.RequiresRoot {
+		header = fmt.Sprintf("sudo %s", header)
+	}
 	for _, flag := range flags {
 		args = append(args, flag.Flag)
 		args = append(args, flag.Value)
 	}
 
-	output, err := RunCommand(ctx, job.Header, args...)
+	output, err := RunCommand(ctx, header, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error while running job command : %s. %w", jobName, err)
 	}
@@ -165,7 +153,7 @@ func (cfg *Config) RunJobCommand(ctx context.Context, jobName string) (*models.R
 
 func RunCommand(ctx context.Context, header string, args ...string) (*models.RunCommandOutput, error) {
 	var stdout, stderr bytes.Buffer
-	
+
 	c := exec.CommandContext(ctx, header, args...)
 	c.Stdout = &stdout
 	c.Stderr = &stderr

@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(cfg *oto.Oto) *gin.Engine {
+func SetupRouter(cfg *oto.Config) *gin.Engine {
     r := gin.Default()
 
     r.Use(cors.New(cors.Config{
@@ -22,12 +22,12 @@ func SetupRouter(cfg *oto.Oto) *gin.Engine {
     }))
 
     r.GET("/execs", func(c *gin.Context) {
-		handlers.GetExecutables(c, cfg)
+		handlers.GetBinarys(c, cfg)
 	})
 
     r.GET("/execs/:execId", func(c *gin.Context) {
 		value := c.Param("execId")
-		handlers.GetExecutable(value, c, cfg)
+		handlers.GetBinary(value, c, cfg)
 	})
 
     r.GET("/params/:execId", func(c *gin.Context) {
@@ -39,7 +39,7 @@ func SetupRouter(cfg *oto.Oto) *gin.Engine {
 	})
 
     r.GET("/jobs", func(c *gin.Context) {
-		handlers.GetJobCommands(c, cfg)
+		handlers.GetJobs(c, cfg)
 	})
 
     r.GET("/params/:execId/:name", func(c *gin.Context) {
@@ -56,7 +56,7 @@ func SetupRouter(cfg *oto.Oto) *gin.Engine {
 
 	r.GET("/jobs/:name", func(c *gin.Context) {
 		value := c.Param("name")
-		handlers.GetJobCommand(value, c, cfg)
+		handlers.GetJob(value, c, cfg)
 	})
 
 	r.GET("/valuetypes", func(c *gin.Context) {
@@ -64,7 +64,7 @@ func SetupRouter(cfg *oto.Oto) *gin.Engine {
 	})
 
     r.POST("/execs", func(c *gin.Context) {
-		handlers.CreateExecutable(c, cfg)
+		handlers.CreateBinary(c, cfg)
 	})
 
     r.POST("/params", func(c *gin.Context) {
@@ -76,7 +76,7 @@ func SetupRouter(cfg *oto.Oto) *gin.Engine {
 	})
 
     r.POST("/jobs", func(c *gin.Context) {
-		handlers.CreateJobCommand(c, cfg)
+		handlers.CreateJob(c, cfg)
 	})
     return r
 }

@@ -1,7 +1,9 @@
 package models
 
-
 import (
+	"context"
+
+	"github.com/Bl4omArchie/simple"
 	"gorm.io/gorm"
 )
 
@@ -18,27 +20,26 @@ const (
 	None	  ValueType = ""
 )
 
-type FlagID string
 type Parameter struct {
 	gorm.Model
-	Flag          string         `gorm:"unique;not null" json:"flag" validate:"required"`
-	Description   string         `gorm:"type:text" json:"description" validate:"omitempty"`
-	ExecID        int         	 `gorm:"not null" json:"exec_id" validate:"required"`
-	Exec		  Executable
-	RequiresRoot  bool           `gorm:"not null"  json:"requires_root" validate:"required"`
-	RequiresValue bool           `gorm:"not null"  json:"requires_value" validate:"required"`
-	ValueType     ValueType      `gorm:"not null"  json:"value_type" validate:"required"`
-    ConflictsWith []*Parameter 	 `gorm:"many2many:flag_conflicts;joinForeignKey:flag_id;joinReferences:conflict_id" json:"conflict_with" validate:"omitempty"`
-    DependsOn     []*Parameter 	 `gorm:"many2many:flag_dependencies;joinForeignKey:flag_id;joinReferences:depends_on_id"  json:"depends_on" validate:"omitempty"`
+	Flag			string			`gorm:"unique;not null"`
+	Description		string			`gorm:"type:text"`
+	BinID			int				`gorm:"not null"`
+	Binary			*Binary			`gorm:"foreignKey:BinId"`
+	RequiresRoot	bool			`gorm:"not null"`
+	RequiresValue	bool			`gorm:"not null"`
+	ValueType		ValueType		`gorm:"not null"`
+    ConflictsWith	[]*Parameter	`gorm:"many2many:flag_conflicts;joinForeignKey:flag_id;joinReferences:conflict_id"`
+    DependsOn		[]*Parameter	`gorm:"many2many:flag_dependencies;joinForeignKey:flag_id;joinReferences:depends_on_id"`
 }
 
-// Newmodels.Parameter returns a new models.Parameter with a flag, description, the corresponding executable ID, if the flag needs root access or a value and the value type 
+// Newmodels.Parameter returns a new models.Parameter with a flag, description, the corresponding Binary ID, if the flag needs root access or a value and the value type 
 // ValueType can be set to "" (None) 
-func NewParameter(flag, description string, exec *Executable, requiresRoot, requiresValue bool, valueType ValueType, conflictsWith, dependsOn []*Parameter) *Parameter {
+func NewParameter(flag, description string, bin *Binary, requiresRoot, requiresValue bool, valueType ValueType, conflictsWith, dependsOn []*Parameter) *Parameter {
 	return &Parameter{
 		Flag: flag,
-		ExecID: int(exec.ID),
-		Exec: *exec,
+		BinID: int(bin.ID),
+		Binary: bin,
 		Description: description,
 		RequiresRoot: requiresRoot,
 		RequiresValue: requiresValue,
@@ -48,6 +49,32 @@ func NewParameter(flag, description string, exec *Executable, requiresRoot, requ
 	}
 }
 
+func FetchParameter(ctx context.Context, db *gorm.DB, field string, flag any) (*Parameter, error) {
+	param, err := simple.GetRowBy[Parameter](ctx, db, field, flag)
+	if err != nil {
+		return nil, err
+	}
+
+	bin, err := FetchBinary(ctx, db, "ID", param.BinID)
+	if err != nil {
+		return nil, err
+	}
+	param.Binary = bin
+
+	return param, nil
+}
+
+func FetchParameters(ctx context.Context, db *gorm.DB, flags []string) ([]*Parameter, error) {
+	var result []*Parameter
+
+	params, err := simple.GetRows[Parameter](ctx, db, "tag", tag)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, param)
+	}
+	return result, nil
+}
 
 func AllValueTypes() []ValueType {
 	return []ValueType{Integer, String, Tuple, FilePath, Float, IPAddress, Port}

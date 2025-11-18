@@ -10,8 +10,8 @@ import (
 	"github.com/go-playground/validator"
 )
 
-func CreateJobCommand(c *gin.Context, cfg *oto.Oto) {
-	var job models.JobCommand
+func CreateJob(c *gin.Context, cfg *oto.Config) {
+	var job models.Job
 
 	if err := c.ShouldBindJSON(&job); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -32,8 +32,8 @@ func CreateJobCommand(c *gin.Context, cfg *oto.Oto) {
 	c.JSON(http.StatusOK, job)
 }
 
-func GetJobCommands(c *gin.Context, oto *oto.Oto) {
-	execs, err := simple.GetRows[models.JobCommand](c, oto.Database, -1)
+func GetJobs(c *gin.Context, oto *oto.Config) {
+	execs, err := simple.GetRows[models.Job](c, oto.Database, -1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get commands": err.Error()})
 		return
@@ -41,8 +41,8 @@ func GetJobCommands(c *gin.Context, oto *oto.Oto) {
 	c.JSON(http.StatusOK, execs)
 }
 
-func GetJobCommand(jobName string, c *gin.Context, oto *oto.Oto) {
-	jobCmd, err := simple.GetRowBy[models.JobCommand](c, oto.Database, "name", jobName)
+func GetJob(jobName string, c *gin.Context, oto *oto.Config) {
+	jobCmd, err := simple.GetRowBy[models.Job](c, oto.Database, "name", jobName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get command": err.Error()})
 		return

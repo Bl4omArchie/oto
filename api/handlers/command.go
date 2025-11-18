@@ -10,7 +10,7 @@ import (
 	"github.com/go-playground/validator"
 )
 
-func CreateCommand(c *gin.Context, cfg *oto.Oto) {
+func CreateCommand(c *gin.Context, cfg *oto.Config) {
 	var cmd models.Command
 
 	if err := c.ShouldBindJSON(&cmd); err != nil {
@@ -32,7 +32,7 @@ func CreateCommand(c *gin.Context, cfg *oto.Oto) {
 	c.JSON(http.StatusOK, cmd)
 }
 
-func GetCommands(c *gin.Context, oto *oto.Oto) {
+func GetCommands(c *gin.Context, oto *oto.Config) {
 	execs, err := simple.GetRows[models.Command](c, oto.Database, -1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get commands": err.Error()})
@@ -41,7 +41,7 @@ func GetCommands(c *gin.Context, oto *oto.Oto) {
 	c.JSON(http.StatusOK, execs)
 }
 
-func GetCommand(execId string, cmdName string, c *gin.Context, oto *oto.Oto) {
+func GetCommand(execId string, cmdName string, c *gin.Context, oto *oto.Config) {
 	cmd, err := simple.GetRowBy[models.Command](c, oto.Database, "name", cmdName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get command": err.Error()})

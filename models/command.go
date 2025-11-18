@@ -1,27 +1,44 @@
 package models
 
 import (
+	"context"
+
 	"gorm.io/gorm"
+	"github.com/Bl4omArchie/simple"
 )
 
 // Major work todo : fast depedency checkup for conflictWith and dependsOn
 
 type Command struct {
 	gorm.Model
-	Name           string         `gorm:"unique;not null" json:"name" validate:"required"`
-	Description    string         `gorm:"type:text" json:"description" validate:"omitempty"`
-	ExecID         int         	  `gorm:"not null" json:"exec_id" validate:"required"`
-	Exec		   Executable
-	RequiresRoot   bool           `gorm:"not null" json:"requires_root" validate:"required"`
-	ParameterFlags []*Parameter   `gorm:"many2many:command_parameters" json:"parameter_flags" validate:"required"`
+	Name			string		`gorm:"unique;not null"`
+	Description		string		`gorm:"type:text"`
+	BinID			int			`gorm:"not null"`
+	Binary			Binary		`gorm:"foreignKey:BinId"`
+	RequiresRoot	bool		`gorm:"not null"`
+	Parameters		[]Parameter	`gorm:"many2many:command_parameters"`
 }
 
-func NewCommand(cmdName, description string, exec *Executable, flags []*Parameter) *Command {
+func FetchCommand(ctx context.Context, db *gorm.DB, field string, tag any) (*Command, error) {
+	cmd, err := simple.GetRowBy[Command](ctx, db, field, tag)
+	if err != nil {
+		return nil, err
+	}
+	params, err := simple.GetRows[Parameter](ctx, db, -1)
+	if err != nil {
+		return nil, err
+	}
+	cmd.Parameters = params
+
+	return cmd, nil
+}
+
+func NewCommand(cmdName, description string, bin *Binary, flags []Parameter) *Command {
 	return &Command{
 		Name: cmdName,
-		ExecID: int(exec.ID),
-		Exec: *exec,
+		BinID: int(bin.ID),
+		Binary: *bin,
 		Description: description,
-		ParameterFlags: flags,
+		Parameters: flags,
 	}
 }

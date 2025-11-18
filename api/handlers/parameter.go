@@ -12,7 +12,7 @@ import (
 )
 
 
-func CreateParameter(c *gin.Context, cfg *oto.Oto) {
+func CreateParameter(c *gin.Context, cfg *oto.Config) {
 	var param models.Parameter
 
 	if err := c.ShouldBindJSON(&param); err != nil {
@@ -34,7 +34,7 @@ func CreateParameter(c *gin.Context, cfg *oto.Oto) {
 	c.JSON(http.StatusOK, param)
 }
 
-func GetParameters(c *gin.Context, oto *oto.Oto) {
+func GetParameters(c *gin.Context, oto *oto.Config) {
 	execs, err := simple.GetRows[models.Parameter](c, oto.Database, -1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get parameters": err.Error()})
@@ -43,7 +43,7 @@ func GetParameters(c *gin.Context, oto *oto.Oto) {
 	c.JSON(http.StatusOK, execs)
 }
 
-func GetParameter(execId string, paramName string, c *gin.Context, oto *oto.Oto) {
+func GetParameter(execId string, paramName string, c *gin.Context, oto *oto.Config) {
 	param, err := simple.GetRowBy[models.Parameter](c, oto.Database, execId, paramName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get parameter": err.Error()})

@@ -3,7 +3,7 @@
 OTO is a golang service for workflow automation.
 
 
-Currently, OTO is providing a single but powerful feature : **RunJobCommand**. 
+Currently, OTO is providing a single but powerful feature : **RunJob**. 
 This task allow you to run binaries automatically with pre defined values.
 
 # How to use OTO ?

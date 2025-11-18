@@ -5,25 +5,30 @@ import (
 	"context"
 
 	"github.com/Bl4omArchie/oto/pkg"
-	"github.com/Bl4omArchie/oto/models"
+	_ "github.com/Bl4omArchie/oto/models"
 )
 
 func init_oto(cfg *oto.Config) {
 	var ctx context.Context = context.Background()
 
-	cfg.AddExecutable("nmap", "7.98", "/usr/bin/nmap", "scanning tool")
-	err :=  cfg.AddParameter(ctx, "nmap - 7.98", "-sL", "scan option for determine which hostt are online", false, false, models.String, []string{}, []string{})
-	if err != nil {
-		fmt.Println(err)
-	}
+	// cfg.AddBinary("nmap", "7.98", "/usr/bin/nmap", "scanning tool")
+	// err :=  cfg.AddParameter(ctx, "nmap - 7.98", "-sL", "scan option for determine which hostt are online", false, false, models.String, []string{}, []string{})
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	err = cfg.AddCommand(ctx, "nmap - 7.98", "-sL", "determine which hosts are online", []string{"-sL"})
-	if err != nil {
-		fmt.Println(err)
-	}
-	cfg.AddJobCommand(ctx, "nmap - 7.98", "-sL", "target gorm.io", map[string]string{"-sL": "185.199.111.153"})
+	// err =  cfg.AddParameter(ctx, "nmap - 7.98", "-sT", "scan depending on -sL", false, false, models.String, []string{"-sL"}, []string{})
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	output, err := cfg.RunJobCommand(ctx, "target gorm.io")
+	// err = cfg.AddCommand(ctx, "nmap - 7.98", "-sL", "determine which hosts are online", []string{"-sL"})
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// cfg.AddJob(ctx, "nmap - 7.98", "-sL", "target gorm.io", map[string]string{"-sL": "185.199.111.153"})
+
+	output, err := cfg.RunJob(ctx, "target gorm.io")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -31,7 +36,7 @@ func init_oto(cfg *oto.Config) {
 }
 
 func flag_matching(cfg *oto.Config) {
-	schema := oto.NewSchema([]models.FlagID{"a", "b", "c", "d", "e"})
+	schema := oto.NewSchema()
 	schema.Require("a", "b")
 	schema.Require("b", "c")
 
@@ -45,5 +50,5 @@ func main() {
 		fmt.Println(err)
 	}
 
-	flag_matching(cfg)
+	init_oto(cfg)
 }

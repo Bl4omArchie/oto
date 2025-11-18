@@ -1,20 +1,46 @@
+// fme.go
+//
+// High-level pseudocode (how lvlath is used to solve OTO-style constraints):
+//
+//  1. Build a directed dependency graph G over Flagument IDs using core.Graph.
+//     For each rule "A requires B", add a directed edge A -> B with weight 0.
+//  2. Maintain a separate symmetric conflict relation C ⊆ V×V in a Go map.
+//  3. At service startup:
+//     a) Run dfs.TopologicalSort(G) to ensure that dependencies form a DAG.
+//        If a cycle is found, reject the schema (misconfigured rules).
+//     b) For each conflict {a, b} in C, run bfs.BFS(G, a) and bfs.BFS(G, b).
+//        If a and b are mutually reachable via "requires" edges, reject
+//        the schema as contradictory.
+//  4. For each user selection S:
+//     a) Compute closure(S) by running BFS from every a ∈ S over G,
+//        adding all reachable Flaguments to the set "need".
+//     b) If "need" contains any conflicting pair {a, b} ∈ C, reject the
+//        selection, optionally explaining the shortest implication chain.
+//     c) Otherwise, build an induced subgraph on "need" and run
+//        dfs.TopologicalSort to get a safe execution order for tasks.
+//
+// This example is a skeleton for an "Flagument-constraints engine" that can
+// sit underneath a scheduler like OTO while staying small, explicit, and
+// easy to explain to users.
+
 package oto
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
+	"sort"
 
 	"github.com/katalvlaran/lvlath/bfs"
 	"github.com/katalvlaran/lvlath/core"
 	"github.com/katalvlaran/lvlath/dfs"
-
-	"github.com/Bl4omArchie/oto/models"
 )
+
+// FlagID is a domain-level identifier for an Flagument/flag.
+type FlagID string
 
 // Schema holds the static constraint model:
 //
-//	 - a map of the Parameters accepted in this set with their flagID as a key
-//   - a directed dependency graph (requires edges) over ArgID values;
+//   - a directed dependency graph (requires edges) over FlagID values;
 //   - a symmetric conflict relation stored as a map of sets.
 //
 // The graph is used for:
@@ -23,27 +49,15 @@ import (
 //
 // The conflict map is kept separate for simplicity and cheaper lookups.
 type Schema struct {
-	flags		[]models.FlagID
-	g			*core.Graph
-	conflicts	map[models.FlagID]map[models.FlagID]struct{}
-}
-
-// CombinationOutput holds :
-//
-//	- a set of flag IDs (which represent the flag field of a Parameter)
-//	- a boolean that indicates if either the combination is valid or not
-//
-// This struct is used by ValidateSchema() function as a return value
-type CombinationOutput struct {
-	Flags []models.FlagID
-	Valid bool
+	g         *core.Graph
+	conflicts map[FlagID]map[FlagID]struct{}
 }
 
 // Sentinel errors for explicit semantics.
 var (
-	ErrSchemaCycle         = errors.New("flagschema: dependency cycle")
-	ErrSchemaContradiction = errors.New("flagschema: schema contradiction between dependency and conflict")
-	ErrSelectionConflict   = errors.New("flagschema: conflicting arguments in selection")
+	ErrSchemaCycle         = errors.New("Schema: dependency cycle")
+	ErrSchemaContradiction = errors.New("Schema: schema contradiction between dependency and conflict")
+	ErrSelectionConflict   = errors.New("Schema: conflicting Flaguments in selection")
 )
 
 // SchemaValidationError wraps a schema-level validation failure with:
@@ -57,31 +71,48 @@ type SchemaValidationError struct {
 func (e *SchemaValidationError) Error() string { return e.Detail }
 func (e *SchemaValidationError) Unwrap() error { return e.Kind }
 
+// ConflictInstance describes a concrete conflict discovered in a selection:
+//   - A and B are the conflicting Flaguments;
+//   - PathAB (if non-nil) is the shortest implication chain A ⇒ ... ⇒ B
+//     recovered from BFS parent information. It is useful for "why" messages.
+type ConflictInstance struct {
+	A, B   FlagID
+	PathAB []FlagID
+}
+
+// SelectionResult is the outcome of validating a concrete user selection.
+//
+//   - Final   is the closure(selection): selected Flaguments + all dependencies;
+//   - Conflict is non-nil if a conflicting pair was detected.
+type SelectionResult struct {
+	Final    []FlagID
+	Conflict *ConflictInstance
+}
+
 // NewSchema constructs a directed, unweighted dependency graph backed by
 // lvlath/core and an empty conflict relation.
 //
 // Complexity of operations on this structure is dominated by BFS/DFS:
 //   - Schema validation: O(V + E + C * (V + E)) in the worst case;
 //   - Selection validation: O(|S| * (V + E) + C) for practical sizes.
-func NewSchema(flags []models.FlagID) *Schema {
+func NewSchema() *Schema {
 	return &Schema{
-		flags:		flags,
-		g:			core.NewGraph(core.WithDirected(true)),
-		conflicts:	make(map[models.FlagID]map[models.FlagID]struct{}),
+		g:         core.NewGraph(core.WithDirected(true)),
+		conflicts: make(map[FlagID]map[FlagID]struct{}),
 	}
 }
 
-// ensureArg makes sure there is a vertex for id in the underlying graph.
+// ensureFlag makes sure there is a vertex for id in the underlying graph.
 // It is intentionally idempotent: calling it multiple times is safe.
-func (s *Schema) ensureArg(id models.FlagID) {
+func (s *Schema) ensureFlag(id FlagID) {
 	_ = s.g.AddVertex(string(id))
 }
 
 // Require declares a dependency A → B meaning “A requires B”.
 // In the graph this is represented as a directed edge A -> B.
-func (s *Schema) Require(a, b models.FlagID) {
-	s.ensureArg(a)
-	s.ensureArg(b)
+func (s *Schema) Require(a, b FlagID) {
+	s.ensureFlag(a)
+	s.ensureFlag(b)
 	// Unweighted dependency edge: weight = 0.
 	_, _ = s.g.AddEdge(string(a), string(b), 0)
 }
@@ -89,9 +120,9 @@ func (s *Schema) Require(a, b models.FlagID) {
 // Conflict registers a symmetric conflict between A and B.
 // If A and B end up together in the closure of a selection, that selection
 // is considered invalid.
-func (s *Schema) Conflict(a, b models.FlagID) {
-	s.ensureArg(a)
-	s.ensureArg(b)
+func (s *Schema) Conflict(a, b FlagID) {
+	s.ensureFlag(a)
+	s.ensureFlag(b)
 
 	if a == b {
 		// A self-conflict does not make sense; ignore defensively.
@@ -99,10 +130,10 @@ func (s *Schema) Conflict(a, b models.FlagID) {
 	}
 
 	if s.conflicts[a] == nil {
-		s.conflicts[a] = make(map[models.FlagID]struct{})
+		s.conflicts[a] = make(map[FlagID]struct{})
 	}
 	if s.conflicts[b] == nil {
-		s.conflicts[b] = make(map[models.FlagID]struct{})
+		s.conflicts[b] = make(map[FlagID]struct{})
 	}
 	s.conflicts[a][b] = struct{}{}
 	s.conflicts[b][a] = struct{}{}
@@ -121,7 +152,7 @@ func (s *Schema) ValidateSchema() error {
 		if errors.Is(err, dfs.ErrCycleDetected) {
 			return &SchemaValidationError{
 				Kind:   ErrSchemaCycle,
-				Detail: "invalid schema: dependency cycle detected in argument graph",
+				Detail: "invalid schema: dependency cycle detected in Flagument graph",
 			}
 		}
 		// Any other error is unexpected and should be surfaced as-is.
@@ -153,18 +184,76 @@ func (s *Schema) ValidateSchema() error {
 	return nil
 }
 
+// ValidateSelection:
+//
+//   - expands the initial selection by adding all transitive dependencies;
+//   - checks for conflicts in the resulting closure;
+//   - returns SelectionResult and either nil or ErrSelectionConflict.
+//
+// This is the function you would typically call per user request.
+func (s *Schema) ValidateSelection(selection []FlagID) (*SelectionResult, error) {
+	need := make(map[FlagID]struct{})
+
+	// Make sure all selected Flaguments exist as vertices.
+	for _, id := range selection {
+		s.ensureFlag(id)
+	}
+
+	// For each selected Flagument, run BFS to collect all dependencies.
+	for _, id := range selection {
+		res, err := bfs.BFS(s.g, string(id))
+		if err != nil {
+			return nil, fmt.Errorf("selection: BFS from %q: %w", id, err)
+		}
+		for _, ID := range res.Order {
+			need[FlagID(ID)] = struct{}{}
+		}
+	}
+
+	// Convert to a sorted slice for deterministic output and testing.
+	final := make([]FlagID, 0, len(need))
+	for id := range need {
+		final = append(final, id)
+	}
+	sort.Slice(final, func(i, j int) bool { return final[i] < final[j] })
+
+	// Now check conflicts inside the closure.
+	for a, row := range s.conflicts {
+		for b := range row {
+			if a >= b {
+				continue
+			}
+			_, hasA := need[a]
+			_, hasB := need[b]
+			if hasA && hasB {
+				ci := &ConflictInstance{
+					A:      a,
+					B:      b,
+					PathAB: shortestPath(s.g, a, b),
+				}
+				return &SelectionResult{
+					Final:    final,
+					Conflict: ci,
+				}, ErrSelectionConflict
+			}
+		}
+	}
+
+	return &SelectionResult{Final: final}, nil
+}
+
 // ExecutionOrder computes a deterministic execution order for the subset
-// of arguments given in flags, respecting all dependency edges.
+// of Flaguments given in Flags, respecting all dependency edges.
 //
 // Internally it builds an induced subgraph on the subset and runs a
 // topological sort via dfs.TopologicalSort.
-func (s *Schema) ExecutionOrder(flags []models.FlagID) ([]models.FlagID, error) {
-	if len(flags) == 0 {
+func (s *Schema) ExecutionOrder(Flags []FlagID) ([]FlagID, error) {
+	if len(Flags) == 0 {
 		return nil, nil
 	}
 
-	needed := make(map[string]struct{}, len(flags))
-	for _, id := range flags {
+	needed := make(map[string]struct{}, len(Flags))
+	for _, id := range Flags {
 		needed[string(id)] = struct{}{}
 	}
 
@@ -196,9 +285,9 @@ func (s *Schema) ExecutionOrder(flags []models.FlagID) ([]models.FlagID, error) 
 		return nil, err
 	}
 
-	out := make([]models.FlagID, len(order))
+	out := make([]FlagID, len(order))
 	for i, v := range order {
-		out[i] = models.FlagID(v)
+		out[i] = FlagID(v)
 	}
 	return out, nil
 }
@@ -206,7 +295,7 @@ func (s *Schema) ExecutionOrder(flags []models.FlagID) ([]models.FlagID, error) 
 // reachable runs BFS once and checks whether "to" is reachable from "from"
 // using the Depth map from BFSResult. This is enough for schema-level checks
 // where only reachability matters, not the exact path.
-func reachable(g *core.Graph, from, to models.FlagID) bool {
+func reachable(g *core.Graph, from, to FlagID) bool {
 	res, err := bfs.BFS(g, string(from))
 	if err != nil {
 		// In a well-formed schema this should not fail; treat as not reachable.
@@ -220,7 +309,7 @@ func reachable(g *core.Graph, from, to models.FlagID) bool {
 // shortestPath reconstructs a shortest path (in edges) between from and to
 // in the unweighted dependency graph, using the PathTo helper from BFSResult.
 // If there is no path, it returns nil.
-func shortestPath(g *core.Graph, from, to models.FlagID) []models.FlagID {
+func shortestPath(g *core.Graph, from, to FlagID) []FlagID {
 	res, err := bfs.BFS(g, string(from))
 	if err != nil {
 		// For explanation purposes, failing silently is acceptable:
@@ -236,9 +325,9 @@ func shortestPath(g *core.Graph, from, to models.FlagID) []models.FlagID {
 		return nil
 	}
 
-	path := make([]models.FlagID, len(strPath))
+	path := make([]FlagID, len(strPath))
 	for i, v := range strPath {
-		path[i] = models.FlagID(v)
+		path[i] = FlagID(v)
 	}
 	return path
 }
