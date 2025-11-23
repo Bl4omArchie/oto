@@ -40,8 +40,8 @@ func NewJob(jobName string, bin *Binary, cmd *Command, flagValues []*FlagValue) 
 	}
 }
 
-func FetchJob(ctx context.Context, db *gorm.DB, jobName string) (*Job, error) {
-	job, err := simple.GetRowBy[Job](ctx, db, "name", jobName)
+func FetchJob(ctx context.Context, db *gorm.DB, column, jobName string) (*Job, error) {
+	job, err := simple.GetRowBy[Job](ctx, db, column, jobName)
 	if err != nil {
 		return nil, err
 	}

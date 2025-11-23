@@ -29,8 +29,8 @@ func NewBinary(name, version, path, description string) *Binary {
 	}
 }
 
-func FetchBinary(ctx context.Context, db *gorm.DB, field string, tag any) (*Binary, error) {
-	return simple.GetRowBy[Binary](ctx, db, "tag", tag)
+func FetchBinary(ctx context.Context, db *gorm.DB, column string, tag any) (*Binary, error) {
+	return simple.GetRowBy[Binary](ctx, db, column, tag)
 }
 
 func GetTag(name string, version string) string {

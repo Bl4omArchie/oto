@@ -7,14 +7,12 @@ import (
 	"github.com/Bl4omArchie/simple"
 )
 
-// Major work todo : fast depedency checkup for conflictWith and dependsOn
-
 type Command struct {
 	gorm.Model
 	Name			string		`gorm:"unique;not null"`
 	Description		string		`gorm:"type:text"`
-	BinID			int			`gorm:"not null"`
-	Binary			Binary		`gorm:"foreignKey:BinId"`
+	BinaryID		int			`gorm:"not null"`
+	Binary			Binary		`gorm:"foreignKey:BinaryID"`
 	RequiresRoot	bool		`gorm:"not null"`
 	Parameters		[]Parameter	`gorm:"many2many:command_parameters"`
 }
@@ -24,7 +22,7 @@ func FetchCommand(ctx context.Context, db *gorm.DB, field string, tag any) (*Com
 	if err != nil {
 		return nil, err
 	}
-	params, err := simple.GetRows[Parameter](ctx, db, -1)
+	params, err := simple.GetTable[Parameter](ctx, db, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +34,7 @@ func FetchCommand(ctx context.Context, db *gorm.DB, field string, tag any) (*Com
 func NewCommand(cmdName, description string, bin *Binary, flags []Parameter) *Command {
 	return &Command{
 		Name: cmdName,
-		BinID: int(bin.ID),
+		BinaryID: int(bin.ID),
 		Binary: *bin,
 		Description: description,
 		Parameters: flags,
