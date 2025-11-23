@@ -50,7 +50,7 @@ func (cfg *Config) AddCommand(ctx context.Context, binID, cmdName, description s
 	}
 
 	// FME : check if the given flags are valid before ingestion
-	_, err = s.ValidateSelection(flags)
+	_, err = s.ValidateCombination(flags)
 	if err != nil {
 		return err
 	}
@@ -102,28 +102,28 @@ func (cfg *Config) AddBinary(name, version, binaryPath, description string) erro
 	return nil
 }
 
-func (cfg *Config) AddParameter(ctx context.Context, binTag, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, dependsOn, conflictsWith []string, s *Schema) error {
+func (cfg *Config) AddParameter(ctx context.Context, binTag, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, Require, InterfersWith []string, s *Schema) error {
 	bin, err := models.FetchBinary(ctx, cfg.Database, "tag", binTag)
 	if err != nil {
 		return err
 	}
 
-	dependsOnToSave, err := models.FetchFlagParameters(ctx, cfg.Database, "flag", dependsOn)
+	RequireToSave, err := models.FetchFlagParameters(ctx, cfg.Database, "flag", Require)
 	if err != nil {
 		return err
 	}
 
-	for _, depends := range dependsOnToSave {
+	for _, depends := range RequireToSave {
 		s.Require(flag, depends.Flag)
 	}
 
-	conflictsWithToSave, err := models.FetchFlagParameters(ctx, cfg.Database, "flag", conflictsWith)
+	InterfersWithToSave, err := models.FetchFlagParameters(ctx, cfg.Database, "flag", InterfersWith)
 	if err != nil {
 		return err
 	}
 
-	for _, conflict := range conflictsWithToSave {
-		s.Conflict(flag, conflict.Flag)
+	for _, Interfer := range InterfersWithToSave {
+		s.Interfer(flag, Interfer.Flag)
 	}
 
 	err = s.ValidateSchema()
@@ -131,7 +131,7 @@ func (cfg *Config) AddParameter(ctx context.Context, binTag, flag, description s
 		return err
 	}
 
-	param := models.NewParameter(flag, description, bin, requiresRoot, requiresValue, valueType, conflictsWithToSave, dependsOnToSave)
+	param := models.NewParameter(flag, description, bin, requiresRoot, requiresValue, valueType, InterfersWithToSave, RequireToSave)
 	if err := cfg.Database.Save(param).Error; err != nil {
 		return fmt.Errorf("failed to parameter : %w", err)
 	}
@@ -152,12 +152,12 @@ func (cfg *Config) AddBinarySchema(ctx context.Context, binTag string) (*Schema,
 	}
 
 	for _, param := range params {
-		for _, dependency := range param.DependsOn {
+		for _, dependency := range param.Require {
 			s.Require(param.Flag, dependency.Flag)
 		}
 
-		for _, conflict := range param.ConflictsWith {
-			s.Conflict(param.Flag, conflict.Flag)
+		for _, Interfer := range param.Interfer {
+			s.Interfer(param.Flag, Interfer.Flag)
 		}
 	}
 

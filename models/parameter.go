@@ -29,13 +29,13 @@ type Parameter struct {
 	RequiresRoot	bool			`gorm:"not null"`
 	RequiresValue	bool			`gorm:"not null"`
 	ValueType		ValueType		`gorm:"not null"`
-    ConflictsWith	[]Parameter		`gorm:"many2many:flag_conflicts;joinForeignKey:flag_id;joinReferences:conflict_id"`
-    DependsOn		[]Parameter		`gorm:"many2many:flag_dependencies;joinForeignKey:flag_id;joinReferences:depends_on_id"`
+	Require			[]Parameter		`gorm:"many2many:flag_dependencies;joinForeignKey:flag_id;joinReferences:requires_id"`
+    Interfer		[]Parameter		`gorm:"many2many:flag_conflicts;joinForeignKey:flag_id;joinReferences:interfer_id"`
 }
 
 // Newmodels.Parameter returns a new models.Parameter with a flag, description, the corresponding Binary ID, if the flag needs root access or a value and the value type 
 // ValueType can be set to "" (None) 
-func NewParameter(flag, description string, bin *Binary, requiresRoot, requiresValue bool, valueType ValueType, conflictsWith, dependsOn []Parameter) *Parameter {
+func NewParameter(flag, description string, bin *Binary, requiresRoot, requiresValue bool, valueType ValueType, interfer, require []Parameter) *Parameter {
 	return &Parameter{
 		Flag: flag,
 		BinaryID: int(bin.ID),
@@ -44,8 +44,8 @@ func NewParameter(flag, description string, bin *Binary, requiresRoot, requiresV
 		RequiresRoot: requiresRoot,
 		RequiresValue: requiresValue,
 		ValueType: valueType,
-		ConflictsWith: conflictsWith,
-		DependsOn: dependsOn,
+		Interfer: interfer,
+		Require: require,
 	}
 }
 
@@ -55,8 +55,8 @@ func FetchParameter(ctx context.Context, db *gorm.DB, column string, flag any) (
 
 	err := db.WithContext(ctx).
 		Preload("Binary").
-		Preload("ConflictsWith").
-		Preload("DependsOn").
+		Preload("Interfer").
+		Preload("Require").
 		Where(fmt.Sprintf("%s = ?", column), flag).
 		First(&param).Error
 	if err != nil {
@@ -72,8 +72,8 @@ func FetchParameters(ctx context.Context, db *gorm.DB, column string, value any)
 
 	err := db.WithContext(ctx).
 		Preload("Binary").
-		Preload("ConflictsWith").
-		Preload("DependsOn").
+		Preload("Interfer").
+		Preload("Require").
 		Where(fmt.Sprintf("%s = ?", column), value).
 		Find(&params).Error
 	if err != nil {

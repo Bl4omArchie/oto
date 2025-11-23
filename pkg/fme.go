@@ -1,34 +1,15 @@
 // fme.go
 //
-// High-level pseudocode (how lvlath is used to solve OTO-style constraints):
+// Original script made by Kyrylo (@katalvlaran on github)
 //
-//  1. Build a directed dependency graph G over Flagument IDs using core.Graph.
-//     For each rule "A requires B", add a directed edge A -> B with weight 0.
-//  2. Maintain a separate symmetric conflict relation C ⊆ V×V in a Go map.
-//  3. At service startup:
-//     a) Run dfs.TopologicalSort(G) to ensure that dependencies form a DAG.
-//        If a cycle is found, reject the schema (misconfigured rules).
-//     b) For each conflict {a, b} in C, run bfs.BFS(G, a) and bfs.BFS(G, b).
-//        If a and b are mutually reachable via "requires" edges, reject
-//        the schema as contradictory.
-//  4. For each user selection S:
-//     a) Compute closure(S) by running BFS from every a ∈ S over G,
-//        adding all reachable flags to the set "need".
-//     b) If "need" contains any conflicting pair {a, b} ∈ C, reject the
-//        selection, optionally explaining the shortest implication chain.
-//     c) Otherwise, build an induced subgraph on "need" and run
-//        dfs.TopologicalSort to get a safe execution order for tasks.
-//
-// This example is a skeleton for an "Flagument-constraints engine" that can
-// sit underneath a scheduler like OTO while staying small, explicit, and
-// easy to explain to users.
+// Adaptation by Archie (@Bl4omArchie)
 
 package oto
 
 import (
-	"errors"
 	"fmt"
 	"sort"
+	"errors"
 
 	"github.com/katalvlaran/lvlath/bfs"
 	"github.com/katalvlaran/lvlath/core"
@@ -38,23 +19,41 @@ import (
 // Schema holds the static constraint model:
 //
 //   - a directed dependency graph (requires edges) over string values;
-//   - a symmetric conflict relation stored as a map of sets.
+//   - a symmetric interfer relation stored as a map of sets.
 //
 // The graph is used for:
 //   - computing the transitive closure of dependencies via BFS;
 //   - checking for cycles and building execution order via DFS.
 //
-// The conflict map is kept separate for simplicity and cheaper lookups.
+// The interfer map is kept separate for simplicity and cheaper lookups.
 type Schema struct {
 	g         *core.Graph
-	conflicts map[string]map[string]struct{}
+	interfers map[string]map[string]struct{}
+}
+
+// InterferInstance describes a concrete interfer discovered in a combination:
+//   - A and B are the interfering Flags;
+//   - PathAB (if non-nil) is the shortest implication chain A ⇒ ... ⇒ B
+//     recovered from BFS parent information. It is useful for "why" messages.
+type InterferInstance struct {
+	A, B   string
+	PathAB []string
+}
+
+// CombinationResult is the outcome of validating a concrete user combination.
+//
+//   - Final   is the closure(combination): selected Flags + all dependencies;
+//   - Interfer is non-nil if a interfering pair was detected.
+type CombinationResult struct {
+	Final    []string
+	Interfer *InterferInstance
 }
 
 // Sentinel errors for explicit semantics.
 var (
-	ErrSchemaCycle         = errors.New("Schema: dependency cycle")
-	ErrSchemaContradiction = errors.New("Schema: schema contradiction between dependency and conflict")
-	ErrSelectionConflict   = errors.New("Schema: conflicting flags in selection")
+	ErrSchemaCycle         = errors.New("argschema: dependency cycle")
+	ErrSchemaContradiction = errors.New("argschema: schema contradiction between dependency and interference")
+	ErrCombinationInterfer   = errors.New("argschema: interfering arguments in combination")
 )
 
 // SchemaValidationError wraps a schema-level validation failure with:
@@ -68,34 +67,17 @@ type SchemaValidationError struct {
 func (e *SchemaValidationError) Error() string { return e.Detail }
 func (e *SchemaValidationError) Unwrap() error { return e.Kind }
 
-// ConflictInstance describes a concrete conflict discovered in a selection:
-//   - A and B are the conflicting flags;
-//   - PathAB (if non-nil) is the shortest implication chain A ⇒ ... ⇒ B
-//     recovered from BFS parent information. It is useful for "why" messages.
-type ConflictInstance struct {
-	A, B   string
-	PathAB []string
-}
-
-// SelectionResult is the outcome of validating a concrete user selection.
-//
-//   - Final   is the closure(selection): selected flags + all dependencies;
-//   - Conflict is non-nil if a conflicting pair was detected.
-type SelectionResult struct {
-	Final    []string
-	Conflict *ConflictInstance
-}
 
 // NewSchema constructs a directed, unweighted dependency graph backed by
-// lvlath/core and an empty conflict relation.
+// lvlath/core and an empty interfer relation.
 //
 // Complexity of operations on this structure is dominated by BFS/DFS:
 //   - Schema validation: O(V + E + C * (V + E)) in the worst case;
-//   - Selection validation: O(|S| * (V + E) + C) for practical sizes.
+//   - Combination validation: O(|S| * (V + E) + C) for practical sizes.
 func NewSchema() *Schema {
 	return &Schema{
 		g:         core.NewGraph(core.WithDirected(true)),
-		conflicts: make(map[string]map[string]struct{}),
+		interfers: make(map[string]map[string]struct{}),
 	}
 }
 
@@ -114,32 +96,32 @@ func (s *Schema) Require(a, b string) {
 	_, _ = s.g.AddEdge(string(a), string(b), 0)
 }
 
-// Conflict registers a symmetric conflict between A and B.
-// If A and B end up together in the closure of a selection, that selection
+// Interfer registers a symmetric interfer between A and B.
+// If A and B end up together in the closure of a combination, that combination
 // is considered invalid.
-func (s *Schema) Conflict(a, b string) {
+func (s *Schema) Interfer(a, b string) {
 	s.ensureFlag(a)
 	s.ensureFlag(b)
 
 	if a == b {
-		// A self-conflict does not make sense; ignore defensively.
+		// A self-interfer does not make sense; ignore defensively.
 		return
 	}
 
-	if s.conflicts[a] == nil {
-		s.conflicts[a] = make(map[string]struct{})
+	if s.interfers[a] == nil {
+		s.interfers[a] = make(map[string]struct{})
 	}
-	if s.conflicts[b] == nil {
-		s.conflicts[b] = make(map[string]struct{})
+	if s.interfers[b] == nil {
+		s.interfers[b] = make(map[string]struct{})
 	}
-	s.conflicts[a][b] = struct{}{}
-	s.conflicts[b][a] = struct{}{}
+	s.interfers[a][b] = struct{}{}
+	s.interfers[b][a] = struct{}{}
 }
 
 // ValidateSchema performs static validation of the constraint schema.
 //
 //  1. Ensures that the dependency graph is a DAG via dfs.TopologicalSort.
-//  2. Ensures that no conflict pair {A, B} is such that one is reachable
+//  2. Ensures that no interfer pair {A, B} is such that one is reachable
 //     from the other through “requires” edges (which would be a contradiction).
 //
 // This function is intended to be called once at service startup.
@@ -149,15 +131,15 @@ func (s *Schema) ValidateSchema() error {
 		if errors.Is(err, dfs.ErrCycleDetected) {
 			return &SchemaValidationError{
 				Kind:   ErrSchemaCycle,
-				Detail: "invalid schema: dependency cycle detected in graph",
+				Detail: "invalid schema: dependency cycle detected in Flag graph",
 			}
 		}
 		// Any other error is unexpected and should be surfaced as-is.
 		return err
 	}
 
-	// 2. Ensure that no conflicting pair is forced by dependencies.
-	for a, row := range s.conflicts {
+	// 2. Ensure that no interfering pair is forced by dependencies.
+	for a, row := range s.interfers {
 		for b := range row {
 			// Work with each unordered pair only once (a < b).
 			if a >= b {
@@ -166,7 +148,7 @@ func (s *Schema) ValidateSchema() error {
 
 			if reachable(s.g, a, b) || reachable(s.g, b, a) {
 				msg := fmt.Sprintf(
-					"invalid schema: %q and %q are declared as conflicting, "+
+					"invalid schema: %q and %q are declared as interfering, "+
 						"but one is reachable from the other via requires edges",
 					a, b,
 				)
@@ -181,26 +163,26 @@ func (s *Schema) ValidateSchema() error {
 	return nil
 }
 
-// ValidateSelection:
+// ValidateCombination:
 //
-//   - expands the initial selection by adding all transitive dependencies;
-//   - checks for conflicts in the resulting closure;
-//   - returns SelectionResult and either nil or ErrSelectionConflict.
+//   - expands the initial combination by adding all transitive dependencies;
+//   - checks for interfers in the resulting closure;
+//   - returns CombinationResult and either nil or ErrCombinationInterfer.
 //
 // This is the function you would typically call per user request.
-func (s *Schema) ValidateSelection(selection []string) (*SelectionResult, error) {
+func (s *Schema) ValidateCombination(combination []string) (*CombinationResult, error) {
 	need := make(map[string]struct{})
 
-	// Make sure all selected flags exist as vertices.
-	for _, id := range selection {
+	// Make sure all selected Flags exist as vertices.
+	for _, id := range combination {
 		s.ensureFlag(id)
 	}
 
-	// For each selected Flagument, run BFS to collect all dependencies.
-	for _, id := range selection {
+	// For each selected Flag, run BFS to collect all dependencies.
+	for _, id := range combination {
 		res, err := bfs.BFS(s.g, string(id))
 		if err != nil {
-			return nil, fmt.Errorf("selection: BFS from %q: %w", id, err)
+			return nil, fmt.Errorf("combination: BFS from %q: %w", id, err)
 		}
 		for _, ID := range res.Order {
 			need[string(ID)] = struct{}{}
@@ -214,8 +196,8 @@ func (s *Schema) ValidateSelection(selection []string) (*SelectionResult, error)
 	}
 	sort.Slice(final, func(i, j int) bool { return final[i] < final[j] })
 
-	// Now check conflicts inside the closure.
-	for a, row := range s.conflicts {
+	// Now check interfers inside the closure.
+	for a, row := range s.interfers {
 		for b := range row {
 			if a >= b {
 				continue
@@ -223,24 +205,24 @@ func (s *Schema) ValidateSelection(selection []string) (*SelectionResult, error)
 			_, hasA := need[a]
 			_, hasB := need[b]
 			if hasA && hasB {
-				ci := &ConflictInstance{
+				ci := &InterferInstance{
 					A:      a,
 					B:      b,
 					PathAB: shortestPath(s.g, a, b),
 				}
-				return &SelectionResult{
+				return &CombinationResult{
 					Final:    final,
-					Conflict: ci,
-				}, ErrSelectionConflict
+					Interfer: ci,
+				}, ErrCombinationInterfer
 			}
 		}
 	}
 
-	return &SelectionResult{Final: final}, nil
+	return &CombinationResult{Final: final}, nil
 }
 
 // ExecutionOrder computes a deterministic execution order for the subset
-// of flags given in Flags, respecting all dependency edges.
+// of Flags given in Flags, respecting all dependency edges.
 //
 // Internally it builds an induced subgraph on the subset and runs a
 // topological sort via dfs.TopologicalSort.
@@ -276,7 +258,7 @@ func (s *Schema) ExecutionOrder(Flags []string) ([]string, error) {
 			// Should not happen if ValidateSchema has already passed.
 			return nil, &SchemaValidationError{
 				Kind:   ErrSchemaCycle,
-				Detail: "cycle detected in induced subgraph for selection",
+				Detail: "cycle detected in induced subgraph for combination",
 			}
 		}
 		return nil, err
@@ -310,7 +292,7 @@ func shortestPath(g *core.Graph, from, to string) []string {
 	res, err := bfs.BFS(g, string(from))
 	if err != nil {
 		// For explanation purposes, failing silently is acceptable:
-		// we simply skip attaching a "reason" path to the conflict.
+		// we simply skip attaching a "reason" path to the interfer.
 		return nil
 	}
 
