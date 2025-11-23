@@ -13,8 +13,9 @@ import (
 )
 
 type Config struct {
-	Database       *gorm.DB
-	TemporalClient client.Client
+	Database		*gorm.DB
+	ParamsSchema	map[string]Schema
+	TemporalClient 	client.Client
 }
 
 func NewInstanceOto(dbPath string) (*Config, error) {
@@ -30,25 +31,28 @@ func NewInstanceOto(dbPath string) (*Config, error) {
 
 	cfg := &Config{
 		Database:       db,
+		ParamsSchema:	make(map[string]Schema, 0),
 		TemporalClient: client,
 	}
 	cfg.Database.AutoMigrate(&models.Binary{}, &models.Parameter{}, &models.Command{}, &models.Job{}, &models.FlagValue{})
 	return cfg, nil
 }
 
-func (cfg *Config) AddCommand(ctx context.Context, binID, cmdName, description string, flags []string) error {
-	bin, err := simple.GetRowBy[models.Binary](ctx, cfg.Database, "tag", binID)
+func (cfg *Config) AddCommand(ctx context.Context, binID, cmdName, description string, flags []string, s *Schema) error {
+	bin, err := models.FetchBinary(ctx, cfg.Database, "tag", binID)
 	if err != nil {
-		return fmt.Errorf("bin ID : %s, doesn't exist : %w", binID, err)
+		return err
+	}
+	
+	flagsToSave, err := models.FetchFlagParameters(ctx, cfg.Database, "flag", flags)
+	if err != nil {
+		return err
 	}
 
-	var flagsToSave []*models.Parameter
-	for _, flag := range flags {
-		param, err := simple.GetRowBy[models.Parameter](ctx, cfg.Database, "flag", flag)
-		if err != nil {
-			return fmt.Errorf("param flag : %s, doesn't exist. %w", flag, err)
-		}
-		flagsToSave = append(flagsToSave, param)
+	// FME : check if the given flags are valid before ingestion
+	_, err = s.ValidateSelection(flags)
+	if err != nil {
+		return err
 	}
 
 	cmd := models.NewCommand(cmdName, description, bin, flagsToSave)
@@ -62,14 +66,14 @@ func (cfg *Config) AddCommand(ctx context.Context, binID, cmdName, description s
 func (cfg *Config) AddJob(ctx context.Context, binID, cmdName, jobName string, flagValues map[string]string) error {
 	var header string
 
-	bin, err := simple.GetRowBy[models.Binary](ctx, cfg.Database, "tag", binID)
+	bin, err := models.FetchBinary(ctx, cfg.Database, "tag", binID)
 	if err != nil {
-		return fmt.Errorf("binary with ID : %s, doesn't exist : %w", binID, err)
+		return err
 	}
 
-	cmd, err := simple.GetRowBy[models.Command](ctx, cfg.Database, "name", cmdName)
+	cmd, err := models.FetchCommand(ctx, cfg.Database, "name", cmdName)
 	if err != nil {
-		return fmt.Errorf("command with name : %s, doesn't exist : %w", cmdName, err)
+		return err
 	}
 
 	header = bin.Path
@@ -98,34 +102,78 @@ func (cfg *Config) AddBinary(name, version, binaryPath, description string) erro
 	return nil
 }
 
-func (cfg *Config) AddParameter(ctx context.Context, execID, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, conflictsWith, dependsOn []string) error {
-	exec, err := simple.GetRowBy[models.Binary](ctx, cfg.Database, "tag", execID)
-	if err != nil {
-		return fmt.Errorf("exec with ID : %s, doesn't exist : %w", execID, err)
-	}
-
-	conflictsWithToSave, err := cfg.FetchParameters(ctx, conflictsWith)
+func (cfg *Config) AddParameter(ctx context.Context, binTag, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, dependsOn, conflictsWith []string, s *Schema) error {
+	bin, err := models.FetchBinary(ctx, cfg.Database, "tag", binTag)
 	if err != nil {
 		return err
 	}
 
-	dependsOnToSave, err := cfg.FetchParameters(ctx, dependsOn)
+	dependsOnToSave, err := models.FetchFlagParameters(ctx, cfg.Database, "flag", dependsOn)
 	if err != nil {
 		return err
 	}
 
-	param := models.NewParameter(flag, description, exec, requiresRoot, requiresValue, valueType, conflictsWithToSave, dependsOnToSave)
+	for _, depends := range dependsOnToSave {
+		s.Require(flag, depends.Flag)
+	}
+
+	conflictsWithToSave, err := models.FetchFlagParameters(ctx, cfg.Database, "flag", conflictsWith)
+	if err != nil {
+		return err
+	}
+
+	for _, conflict := range conflictsWithToSave {
+		s.Conflict(flag, conflict.Flag)
+	}
+
+	err = s.ValidateSchema()
+	if err != nil {
+		return err
+	}
+
+	param := models.NewParameter(flag, description, bin, requiresRoot, requiresValue, valueType, conflictsWithToSave, dependsOnToSave)
 	if err := cfg.Database.Save(param).Error; err != nil {
 		return fmt.Errorf("failed to parameter : %w", err)
 	}
 	return nil
 }
 
+func (cfg *Config) AddBinarySchema(ctx context.Context, binTag string) (*Schema, error) {
+	s := NewSchema()
+
+	bin, err := models.FetchBinary(ctx, cfg.Database, "tag", binTag)
+	if err != nil {
+		return nil, err
+	}
+
+	params, err := models.FetchParameters(ctx, cfg.Database, "binary_id", bin.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, param := range params {
+		for _, dependency := range param.DependsOn {
+			s.Require(param.Flag, dependency.Flag)
+		}
+
+		for _, conflict := range param.ConflictsWith {
+			s.Conflict(param.Flag, conflict.Flag)
+		}
+	}
+
+	err = s.ValidateSchema()
+	if err != nil {
+		return nil, err
+	}
+	cfg.ParamsSchema[binTag] = *s
+	return s, nil
+}
+
 func (cfg *Config) RunJob(ctx context.Context, jobName string) (*models.RunCommandOutput, error) {
 	var header string
 	var args []string
 
-	job, err := models.GetJobFromDB(ctx, cfg.Database, jobName)
+	job, err := models.FetchJob(ctx, cfg.Database, "name", jobName)
 	if err != nil {
 		return nil, err
 	}
@@ -136,6 +184,7 @@ func (cfg *Config) RunJob(ctx context.Context, jobName string) (*models.RunComma
 		return nil, fmt.Errorf("couldn't retrieve the flag values of job command : %s. %w", jobName, err)
 	}
 
+	header = job.Binary.Path
 	if job.Command.RequiresRoot {
 		header = fmt.Sprintf("sudo %s", header)
 	}

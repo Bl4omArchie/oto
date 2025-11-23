@@ -3,10 +3,11 @@ module github.com/Bl4omArchie/oto
 go 1.25.3
 
 require (
-	github.com/Bl4omArchie/simple v1.1.0
+	github.com/Bl4omArchie/simple v1.1.3
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/katalvlaran/lvlath v0.0.3-0.20251020115808-11c4b1c8876d
 	go.temporal.io/sdk v1.37.0
 	gorm.io/gorm v1.31.1
 )
@@ -39,7 +40,6 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/katalvlaran/lvlath v0.0.3-0.20251020115808-11c4b1c8876d // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
