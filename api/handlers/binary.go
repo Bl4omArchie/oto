@@ -11,41 +11,41 @@ import (
 )
 
 func CreateBinary(c *gin.Context, cfg *oto.Config) {
-	var exec models.Binary
+	var binary models.Binary
 
-	if err := c.ShouldBindJSON(&exec); err != nil {
+	if err := c.ShouldBindJSON(&binary); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	validate := validator.New()
-	if err := validate.Struct(&exec); err != nil {
+	if err := validate.Struct(&binary); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := cfg.Database.Create(&exec).Error; err != nil {
+	if err := cfg.Database.Create(&binary).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create Binary", "details": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, exec)
+	c.JSON(http.StatusOK, binary)
 }
 
 func GetBinarys(c *gin.Context, cfg *oto.Config) {
-	execs, err := simple.GetRows[models.Binary](c, cfg.Database, -1)
+	binarys, err := simple.GetTable[models.Binary](c, cfg.Database, -1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get Binarys": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, execs)
+	c.JSON(http.StatusOK, binarys)
 }
 
-func GetBinary(execId string, c *gin.Context, cfg *oto.Config) {
-	exec, err := simple.GetRowBy[models.Binary](c, cfg.Database, "tag", execId)
+func GetBinary(binTag string, c *gin.Context, cfg *oto.Config) {
+	binary, err := simple.GetRowBy[models.Binary](c, cfg.Database, "tag", binTag)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get Binary": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, exec)
+	c.JSON(http.StatusOK, binary)
 }

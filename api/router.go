@@ -21,20 +21,20 @@ func SetupRouter(cfg *oto.Config) *gin.Engine {
         MaxAge:           12 * time.Hour,
     }))
 
-    r.GET("/execs", func(c *gin.Context) {
+    r.GET("/binaries", func(c *gin.Context) {
 		handlers.GetBinarys(c, cfg)
 	})
 
-    r.GET("/execs/:execId", func(c *gin.Context) {
-		value := c.Param("execId")
+    r.GET("/binaries/:binTag", func(c *gin.Context) {
+		value := c.Param("binTag")
 		handlers.GetBinary(value, c, cfg)
 	})
 
-    r.GET("/params/:execId", func(c *gin.Context) {
+    r.GET("/params/:binTag", func(c *gin.Context) {
 		handlers.GetParameters(c, cfg)
 	})
 
-    r.GET("/cmds/:execId", func(c *gin.Context) {
+    r.GET("/cmds/:binTag", func(c *gin.Context) {
 		handlers.GetCommands(c, cfg)
 	})
 
@@ -42,14 +42,14 @@ func SetupRouter(cfg *oto.Config) *gin.Engine {
 		handlers.GetJobs(c, cfg)
 	})
 
-    r.GET("/params/:execId/:name", func(c *gin.Context) {
-		key := c.Param("execId")
+    r.GET("/params/:binTag/:name", func(c *gin.Context) {
+		key := c.Param("binTag")
 		value := c.Param("name")
 		handlers.GetParameter(key, value, c, cfg)
 	})
 
-	r.GET("/cmds/:execId/:name", func(c *gin.Context) {
-		key := c.Param("execId")
+	r.GET("/cmds/:binTag/:name", func(c *gin.Context) {
+		key := c.Param("binTag")
 		value := c.Param("name")
 		handlers.GetCommand(key, value, c, cfg)
 	})
@@ -63,7 +63,7 @@ func SetupRouter(cfg *oto.Config) *gin.Engine {
 		handlers.GetValueTypes(c)
 	})
 
-    r.POST("/execs", func(c *gin.Context) {
+    r.POST("/binaries", func(c *gin.Context) {
 		handlers.CreateBinary(c, cfg)
 	})
 

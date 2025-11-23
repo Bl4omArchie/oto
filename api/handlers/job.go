@@ -33,7 +33,7 @@ func CreateJob(c *gin.Context, cfg *oto.Config) {
 }
 
 func GetJobs(c *gin.Context, oto *oto.Config) {
-	execs, err := simple.GetRows[models.Job](c, oto.Database, -1)
+	execs, err := simple.GetTable[models.Job](c, oto.Database, -1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get commands": err.Error()})
 		return

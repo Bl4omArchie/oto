@@ -35,7 +35,7 @@ func CreateParameter(c *gin.Context, cfg *oto.Config) {
 }
 
 func GetParameters(c *gin.Context, oto *oto.Config) {
-	execs, err := simple.GetRows[models.Parameter](c, oto.Database, -1)
+	execs, err := simple.GetTable[models.Parameter](c, oto.Database, -1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get parameters": err.Error()})
 		return
@@ -43,8 +43,8 @@ func GetParameters(c *gin.Context, oto *oto.Config) {
 	c.JSON(http.StatusOK, execs)
 }
 
-func GetParameter(execId string, paramName string, c *gin.Context, oto *oto.Config) {
-	param, err := simple.GetRowBy[models.Parameter](c, oto.Database, execId, paramName)
+func GetParameter(binTag string, paramName string, c *gin.Context, oto *oto.Config) {
+	param, err := simple.GetRowBy[models.Parameter](c, oto.Database, binTag, paramName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get parameter": err.Error()})
 		return
