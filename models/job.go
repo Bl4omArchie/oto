@@ -11,8 +11,6 @@ import (
 type Job struct {
 	gorm.Model
 	Name       string       `gorm:"unique;not null"`
-	BinaryId   int          `gorm:"not null"`
-	Binary     *Binary      `gorm:"foreignKey:BinaryId"`
 	CommandId  int          `gorm:"not null"`
 	Command    *Command     `gorm:"foreignKey:CommandId"`
 	FlagValues []*FlagValue `gorm:"many2many:job_flagvalues"`
@@ -20,23 +18,31 @@ type Job struct {
 
 type FlagValue struct {
 	gorm.Model
-	Flag string			`gorm:"not null"`
-	Value string		`gorm:"not null"`
+	ParameterId  int		`gorm:"not null"`
+	Parameter    *Parameter	`gorm:"foreignKey:ParameterId"`
+	Value string			`gorm:"not null"`
 }
 
-type RunCommandOutput struct {
+type JobOutput struct {
 	Stdout string
 	Stderr string
 }
 
-func NewJob(jobName string, bin *Binary, cmd *Command, flagValues []*FlagValue) *Job {
+
+func NewJob(jobName string, cmd *Command, flagValues []*FlagValue) *Job {
 	return &Job{
 		Name: jobName,
-		BinaryId: int(bin.ID),
-		Binary: bin,
 		CommandId: int(cmd.ID),
 		Command: cmd,
 		FlagValues: flagValues,
+	}
+}
+
+func NewFlagValue(param *Parameter, value string) *FlagValue {
+	return &FlagValue{
+		ParameterId: int(param.ID),
+		Parameter: param,
+		Value: value,
 	}
 }
 
@@ -46,12 +52,6 @@ func FetchJob(ctx context.Context, db *gorm.DB, column, jobName string) (*Job, e
 		return nil, err
 	}
 
-	bin, err := FetchBinary(ctx, db, "ID", job.BinaryId)
-	if err != nil {
-		return nil, err
-	}
-	job.Binary = bin
-
 	cmd, err := FetchCommand(ctx, db, "ID", job.CommandId)
 	if err != nil {
 		return nil, err
@@ -59,11 +59,4 @@ func FetchJob(ctx context.Context, db *gorm.DB, column, jobName string) (*Job, e
 	job.Command = cmd
 
 	return job, nil
-}
-
-func NewFlagValue(flag, value string) *FlagValue {
-	return &FlagValue{
-		Flag: flag,
-		Value: value,
-	}
 }

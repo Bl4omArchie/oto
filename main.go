@@ -8,7 +8,7 @@ import (
 	"github.com/Bl4omArchie/oto/models"
 )
 
-func init_oto(cfg *oto.Config) error {
+func init_oto(cfg *oto.Instance) error {
 	var ctx context.Context = context.Background()
 
 	err := cfg.AddBinary("nmap", "7.98", "/usr/bin/nmap", "scanning tool")

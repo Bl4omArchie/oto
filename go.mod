@@ -4,6 +4,7 @@ go 1.25.3
 
 require (
 	github.com/Bl4omArchie/simple v1.1.3
+	github.com/caarlos0/env/v11 v11.3.1
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-playground/validator v9.31.0+incompatible

@@ -12,14 +12,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type Config struct {
-	Database		*gorm.DB
-	ParamsSchema	map[string]Schema
-	TemporalClient 	client.Client
+type Instance struct {
+	Database       *gorm.DB
+	ParamsSchema   map[string]Schema
+	TemporalClient client.Client
 }
 
-func NewInstanceOto(dbPath string) (*Config, error) {
-	db, err := simple.OpenDatabase(simple.GetSqlite(dbPath))
+func NewInstanceOto() (*Instance, error) {
+	cfg, err := LoadOptionsFromEnv()
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := simple.OpenDatabase("postgresql", cfg.PostgresqlDsn)
 	if err != nil {
 		return nil, err
 	}
@@ -29,21 +34,21 @@ func NewInstanceOto(dbPath string) (*Config, error) {
 		return nil, err
 	}
 
-	cfg := &Config{
+	instance := &Instance{
 		Database:       db,
-		ParamsSchema:	make(map[string]Schema, 0),
+		ParamsSchema:   make(map[string]Schema, 0),
 		TemporalClient: client,
 	}
-	cfg.Database.AutoMigrate(&models.Binary{}, &models.Parameter{}, &models.Command{}, &models.Job{}, &models.FlagValue{})
-	return cfg, nil
+	instance.Database.AutoMigrate(&models.Binary{}, &models.Parameter{}, &models.Command{}, &models.Job{}, &models.FlagValue{})
+	return instance, nil
 }
 
-func (cfg *Config) AddCommand(ctx context.Context, binID, cmdName, description string, flags []string, s *Schema) error {
+func (cfg *Instance) AddCommand(ctx context.Context, binID, cmdName, description string, flags []string, s *Schema) error {
 	bin, err := models.FetchBinary(ctx, cfg.Database, "tag", binID)
 	if err != nil {
 		return err
 	}
-	
+
 	flagsToSave, err := models.FetchFlagParameters(ctx, cfg.Database, "flag", flags)
 	if err != nil {
 		return err
@@ -63,22 +68,10 @@ func (cfg *Config) AddCommand(ctx context.Context, binID, cmdName, description s
 }
 
 // TODO : verify key-value pairs if flags are correct
-func (cfg *Config) AddJob(ctx context.Context, binID, cmdName, jobName string, flagValues map[string]string) error {
-	var header string
-
-	bin, err := models.FetchBinary(ctx, cfg.Database, "tag", binID)
-	if err != nil {
-		return err
-	}
-
+func (cfg *Instance) AddJob(ctx context.Context, cmdName, jobName string, flagValues map[*models.Parameter]string) error {
 	cmd, err := models.FetchCommand(ctx, cfg.Database, "name", cmdName)
 	if err != nil {
 		return err
-	}
-
-	header = bin.Path
-	if cmd.RequiresRoot {
-		header = "sudo " + header
 	}
 
 	var flagValuesToSave []*models.FlagValue
@@ -86,14 +79,14 @@ func (cfg *Config) AddJob(ctx context.Context, binID, cmdName, jobName string, f
 		flagValuesToSave = append(flagValuesToSave, models.NewFlagValue(flag, value))
 	}
 
-	job := models.NewJob(jobName, bin, cmd, flagValuesToSave)
+	job := models.NewJob(jobName, cmd, flagValuesToSave)
 	if err := cfg.Database.Save(job).Error; err != nil {
 		return fmt.Errorf("failed to save job command: %w", err)
 	}
 	return nil
 }
 
-func (cfg *Config) AddBinary(name, version, binaryPath, description string) error {
+func (cfg *Instance) AddBinary(name, version, binaryPath, description string) error {
 	bin := models.NewBinary(name, version, binaryPath, description)
 	if err := cfg.Database.Save(bin).Error; err != nil {
 		return fmt.Errorf("failed to save Binary: %w", err)
@@ -102,7 +95,7 @@ func (cfg *Config) AddBinary(name, version, binaryPath, description string) erro
 	return nil
 }
 
-func (cfg *Config) AddParameter(ctx context.Context, binTag, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, Require, InterfersWith []string, s *Schema) error {
+func (cfg *Instance) AddParameter(ctx context.Context, binTag, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, Require, InterfersWith []string, s *Schema) error {
 	bin, err := models.FetchBinary(ctx, cfg.Database, "tag", binTag)
 	if err != nil {
 		return err
@@ -138,7 +131,7 @@ func (cfg *Config) AddParameter(ctx context.Context, binTag, flag, description s
 	return nil
 }
 
-func (cfg *Config) AddBinarySchema(ctx context.Context, binTag string) (*Schema, error) {
+func (cfg *Instance) AddBinarySchema(ctx context.Context, binTag string) (*Schema, error) {
 	s := NewSchema()
 
 	bin, err := models.FetchBinary(ctx, cfg.Database, "tag", binTag)
@@ -169,7 +162,7 @@ func (cfg *Config) AddBinarySchema(ctx context.Context, binTag string) (*Schema,
 	return s, nil
 }
 
-func (cfg *Config) RunJob(ctx context.Context, jobName string) (*models.RunCommandOutput, error) {
+func (cfg *Instance) RunJob(ctx context.Context, jobName string) (*models.JobOutput, error) {
 	var header string
 	var args []string
 
@@ -184,12 +177,12 @@ func (cfg *Config) RunJob(ctx context.Context, jobName string) (*models.RunComma
 		return nil, fmt.Errorf("couldn't retrieve the flag values of job command : %s. %w", jobName, err)
 	}
 
-	header = job.Binary.Path
+	header = job.Command.Binary.Path
 	if job.Command.RequiresRoot {
 		header = fmt.Sprintf("sudo %s", header)
 	}
 	for _, flag := range flags {
-		args = append(args, flag.Flag)
+		args = append(args, flag.Parameter.Flag)
 		args = append(args, flag.Value)
 	}
 
@@ -200,7 +193,7 @@ func (cfg *Config) RunJob(ctx context.Context, jobName string) (*models.RunComma
 	return output, nil
 }
 
-func RunCommand(ctx context.Context, header string, args ...string) (*models.RunCommandOutput, error) {
+func RunCommand(ctx context.Context, header string, args ...string) (*models.JobOutput, error) {
 	var stdout, stderr bytes.Buffer
 
 	c := exec.CommandContext(ctx, header, args...)
@@ -208,5 +201,5 @@ func RunCommand(ctx context.Context, header string, args ...string) (*models.Run
 	c.Stderr = &stderr
 	err := c.Run()
 
-	return &models.RunCommandOutput{Stdout: stdout.String(), Stderr: stderr.String()}, err
+	return &models.JobOutput{Stdout: stdout.String(), Stderr: stderr.String()}, err
 }
