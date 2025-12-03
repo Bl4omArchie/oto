@@ -1,0 +1,83 @@
+<style>
+  /* Highlight basé sur :target */
+  aside a {
+    transition: background 0.25s, color 0.25s;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: block;
+  }
+  aside a.active {
+    background: rgb(59 130 246 / 0.15);
+    color: rgb(29 78 216);
+    font-weight: 600;
+  }
+
+  /* Sélection dynamique via :target */
+  #account:target ~ aside a[href="#account"],
+  #appearance:target ~ aside a[href="#appearance"],
+  #notifications:target ~ aside a[href="#notifications"],
+  #security:target ~ aside a[href="#security"],
+  #integrations:target ~ aside a[href="#integrations"],
+  #advanced:target ~ aside a[href="#advanced"] {
+    background: rgb(59 130 246 / 0.15);
+    color: rgb(29 78 216);
+    font-weight: 600;
+  }
+
+  /* Animation fade + slide */
+  section {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: 0.35s ease;
+  }
+  section:target {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  /* Default visible if no target */
+  section.default {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Toggle switches */
+  .switch input:checked + span {
+    background-color: rgb(59 130 246);
+  }
+  .switch input:checked + span::after {
+    transform: translateX(1.25rem);
+  }
+  .switch span::after {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    height: 1rem;
+    width: 1rem;
+    background: white;
+    border-radius: 9999px;
+    transition: 0.25s;
+  }
+</style>
+
+<!-- SIDEBAR -->
+<aside class="w-56 border-r border-gray-300 p-6 space-y-3 font-medium text-gray-800 sticky top-0 h-screen">
+
+  <a href="#account">Account</a>
+  <a href="#appearance">Appearance</a>
+  <a href="#notifications">Notifications</a>
+  <a href="#security">Security</a>
+  <a href="#integrations">Integrations</a>
+  <a href="#advanced">Advanced</a>
+
+</aside>
+
+<!-- SEPARATOR -->
+<div class="w-px bg-gray-300"></div>
+
+<div class="content">
+  <p>Hello</p>
+</div>

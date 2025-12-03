@@ -1,0 +1,35 @@
+<h2 class="text-xl font-semibold mb-2">Binaries</h2>
+
+<div class="max-w-3xl mx-auto">
+<div class="flex justify-between items-center mb-4">
+    <input id="search" type="text" placeholder="Search binaries..." class="border p-2 rounded w-2/3">
+    <button id="addBtn" class="bg-blue-500 text-white px-4 py-2 rounded ml-2">+</button>
+</div>
+
+<!-- Add Binary Form (hidden by default) -->
+<div id="addForm" class="bg-white p-4 rounded shadow mb-4 hidden">
+    <h2 class="font-bold mb-2">Add New Binary</h2>
+    <form id="binaryForm" class="grid gap-2">
+    <input name="tag" placeholder="Tag" class="border p-2 rounded" required>
+    <input name="name" placeholder="Name" class="border p-2 rounded" required>
+    <input name="version" placeholder="Version" class="border p-2 rounded" required>
+    <input name="path" placeholder="Path" class="border p-2 rounded" required>
+    <textarea name="description" placeholder="Description" class="border p-2 rounded" required></textarea>
+    <div class="flex justify-end mt-2">
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Save</button>
+        <button type="button" id="cancelBtn" class="ml-2 bg-gray-300 px-4 py-2 rounded">Cancel</button>
+    </div>
+    </form>
+</div>
+
+<!-- List of Binaries -->
+<ul id="binaryList" class="space-y-2">
+<div class="bg-white p-2 rounded shadow flex justify-between">
+    <p class="font-bold">Nmap - 7.98/p>
+    <p class="text-sm text-gray-600">/usr/bin/nmap</p>
+    <p class="text-gray-700">$Scanning tool</p>
+</div>
+</ul>
+</div>
+
+<script src="../scripts/binaries.js"></script>
