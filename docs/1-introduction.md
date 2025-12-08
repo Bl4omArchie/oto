@@ -102,10 +102,10 @@ Here as you can see, we define the algorithm we want, the key sizes with rsa_key
 Currently, the running system for jobs isn't 100% done because Temporal isn't completly integrated. But theoritically, you would have to call RunJobWorkflow() function like this :
 
 ```go
-output, err := RunJobWorkflow(ctx context.Context, "GenRSA-2048")
+output, err := RunJobDemo(ctx context.Context, "GenRSA-2048")
 ```
 
 Then in output, you'll find Stdout and Stderr.
 
 
-Next part of the guide [here](guide_two.md)
+Next part of the guide [here](2-services.md)

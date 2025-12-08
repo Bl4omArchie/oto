@@ -62,4 +62,4 @@ You can now click on the following address to access the different web dashboard
 
 The API is also available here : http://localhost:1515
 
-Next part of the guide [here](guide_third.md)
+Next part of the guide [here](3-code.md)
