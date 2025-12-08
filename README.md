@@ -55,9 +55,10 @@ atlas migrate apply --dir file://migrations --url postgresql://${POSTGRES_USER}:
 Current work :
 - [x] Import/export config to json
 - [x] Docker compose deployement
-- [ ] Temporal integration : workflows
-- [ ] Temporal integration : scheduling
-- [ ] Write installation guide
+- [x] Write installation guide
+- [ ] Demo with openSSL rsa keypair generation
 - [ ] Atlas for automatic database migration
 - [ ] Change ExecutableTag to ExecutableID in Parameter
 - [ ] Update AddJob() for map parameter
+- [ ] Temporal integration : workflows
+- [ ] Temporal integration : scheduling
