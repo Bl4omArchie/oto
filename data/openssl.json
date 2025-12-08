@@ -7,77 +7,40 @@
   { "flag":"-CAfile", "description":"Specify trusted CA file", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
   { "flag":"-CApath", "description":"Specify trusted CA directory", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
 
-  { "flag":"-in", "description":"Input file for certificate", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
-  { "flag":"-text", "description":"Print full certificate text", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-in", "description":"Input file", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+  { "flag":"-out", "description":"Output file", "executable_tag":"openssl - 3.5.3", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"-text", "description":"Print full text of certificate/key", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
   { "flag":"-serial", "description":"Print certificate serial number", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
   { "flag":"-fingerprint", "description":"Print certificate fingerprint", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
 
-  { "flag":"-new", "description":"Generate new certificateuest", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"-nodes", "description":"Do notrypt private key", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-new", "description":"Generate new request or key", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-nodes", "description":"Do not encrypt private key", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
   { "flag":"-key", "description":"Use existing key file", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
   { "flag":"-keyout", "description":"Write generated key to file", "executable_tag":"openssl - 3.5.3", "requires_root":true, "requires_value":true, "value_type":"string" },
 
+  { "flag":"-pkeyopt", "description":"Set key options (key size...)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
   { "flag":"-algorithm", "description":"Set key algorithm (RSA, EC...)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
-  { "flag":"-out", "description":"Write generated private key", "executable_tag":"openssl - 3.5.3", "requires_root":true, "requires_value":true, "value_type":"string" },
   { "flag":"-sha256", "description":"Use SHA-256 digest", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
   { "flag":"-sha512", "description":"Use SHA-512 digest", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
   { "flag":"-verify", "description":"Verify signature using public key", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
   { "flag":"-signature", "description":"Signature file for verification", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
 
-  { "flag":"-aes-256-cbc", "description":"AES-256-CBC symmetricryption", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"-aes-256-gcm", "description":"AES-256-GCM authenticatedryption", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"genpkey", "description":"Generate private keys (RSA, EC, Ed25519, X25519)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"pkey", "description":"Manipulate private/public keys", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"pkeyparam", "description":"Display key parameters (RSA, EC)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"pkeyutl", "description":"Perform crypto operations: sign, verify, encrypt, decrypt", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"req", "description":"Generate or process CSR (Certificate Signing Request)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"x509", "description":"Manipulate or generate X.509 certificates", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"enc", "description":"Symmetric encryption (AES, DES, etc.)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
   { "flag":"-salt", "description":"Use salt (recommended)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
 
-  { "flag":"genrsa", "description":"Génère une clé privée RSA (deprecated, remplacé par genpkey)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"rsa", "description":"Manipule ou convertit des clés RSA (lecture, conversion, chiffrement)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"genpkey", "description":"Génère des clés privées (RSA, EC, Ed25519, X25519)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"pkey", "description":"Manipule des clés privées/publiques de tout type", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"pkeyparam", "description":"Affiche des paramètres (ex. RSA/EC)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"pkeyutl", "description":"Effectue des opérations cryptographiques : signature, vérification, chiffrement, déchiffrement", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"dgst", "description":"Compute message digests: SHA256, SHA512, MD5", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
 
-  { "flag":"--algorithm", "description":"Algorithme pour genpkey (ex: RSA, EC, ED25519)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
-  { "flag":"--pkeyopt", "description":"Options liées à la génération de clé (ex: rsa_keygen_bits:4096)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+  { "flag":"rand", "description":"Generate cryptographic random bytes", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
 
-  { "flag":"--pubout", "description":"Sort une clé publique à partir d'une clé privée", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--noout", "description":"Ne pas afficher certaines sections de la clé/certificat", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--text", "description":"Affiche les données sous format lisible", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"verify", "description":"Verify a certificate against a CA", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
 
-  { "flag":"--check", "description":"Vérifie l'intégrité d'une clé privée RSA/EC", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-
-  { "flag":"--passin", "description":"Définit le mot de passe d'entrée (clé privée chiffrée)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
-  { "flag":"--passout", "description":"Définit le mot de passe pour la sortie (clé chiffrée)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
-
-  { "flag":"req", "description":"Génère ou traite des CSR (Certificate Signing Requests)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--new", "description":"Génère une nouvelle CSR", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--x509", "description":"Génère directement un certificat X.509 sans CSR", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--days", "description":"Durée du certificat en jours", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"int" },
-  { "flag":"--subj", "description":"Sujet du certificat (/C=FR/O=Org/CN=example.com)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
-
-  { "flag":"x509", "description":"Manipule, génère, visualise des certificats X.509", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--serial", "description":"Force un numéro de série spécifique", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
-  { "flag":"--extensions", "description":"Sélectionne un bloc d’extensions dans un fichier .conf", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
-
-  { "flag":"openssh", "description":"Convertit des clés OpenSSL vers SSH ou inversement (ex: clé RSA→OpenSSH)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--ssh-rsa", "description":"Force une clé RSA en format OpenSSH officiel", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--ssh-sk", "description":"Génère/convertit une clé de type security-key (FIDO/U2F) si supporté", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-
-  { "flag":"dgst", "description":"Hashage : SHA256, SHA512, MD5, etc.", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--sha256", "description":"Hash SHA-256", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--sha512", "description":"Hash SHA-512", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--md5", "description":"Hash MD5 (obsolète)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-
-  { "flag":"enc", "description":"Chiffrement symétrique (AES, ChaCha20, DES…)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--aes-256-cbc", "description":"Chiffrement AES‑256 CBC", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--aes-256-gcm", "description":"Chiffrement Authenticated Encryption GCM", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--chacha20", "description":"Chiffrement ChaCha20", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-
-  { "flag":"rand", "description":"Génère des bytes aléatoires cryptographiques", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--hex", "description":"Sortie hexadécimale", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--base64", "description":"Sortie Base64", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-
-  { "flag":"verify", "description":"Vérifie un certificat par rapport à une CA", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"--CAfile", "description":"Fichier de CA utilisé pour vérifier", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
-
-  { "flag":"version", "description":"Affiche la version d’OpenSSL installée", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
-  { "flag":"help", "description":"Affiche l’aide générale", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" }
+  { "flag":"version", "description":"Display OpenSSL version", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"help", "description":"Display general help", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" }
 ]

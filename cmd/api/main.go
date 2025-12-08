@@ -10,7 +10,7 @@ import (
 )
 
 func RunAPiServer(host, port string) {
-	cfg, err := oto.NewInstanceOto("../../.env")
+	cfg, err := oto.NewInstanceOto(".env")
 	if err != nil {
 		fmt.Println(err)
 	}
