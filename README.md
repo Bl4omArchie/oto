@@ -47,7 +47,7 @@ Why Temporal ?
 Current work :
 - [x] Import/export config to json
 - [x] Docker compose deployement
-- [] Temporal integration : workflows
-- [] Temporal integration : scheduling
-- [] Write installation guide
-- [] Atlas for database migration
+- [ ] Temporal integration : workflows
+- [ ] Temporal integration : scheduling
+- [ ] Write installation guide
+- [ ] Atlas for automatic database migration
