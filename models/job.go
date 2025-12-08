@@ -46,7 +46,9 @@ func FetchJob(ctx context.Context, db *gorm.DB, column, value any) (*Job, error)
 
 	err := db.WithContext(ctx).
 		Preload("Command").
+		Preload("Command.Executable").
 		Preload("FlagValues").
+		Preload("FlagValues.Parameter").
 		Where(fmt.Sprintf("%s = ?", column), value).
 		First(&job).Error
 	if err != nil {
@@ -61,7 +63,9 @@ func FetchJobs(ctx context.Context, db *gorm.DB, column, value any) ([]Job, erro
 
 	err := db.WithContext(ctx).
 		Preload("Command").
+		Preload("Command.Executable").
 		Preload("FlagValues").
+		Preload("FlagValues.Parameter").
 		Where(fmt.Sprintf("%s = ?", column), value).
 		Find(&jobs).Error
 	if err != nil {

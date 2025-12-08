@@ -19,12 +19,11 @@ const (
 	Port      ValueType = "port"
 	None      ValueType = ""
 )
-
 type Parameter struct {
 	gorm.Model
-	Flag          string      `gorm:"uniqueIndex:uid_executable_parameter;not null"`
+	Flag          string      `gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
 	Description   string      `gorm:"type:text"`
-	ExecutableTag string      `gorm:"uniqueIndex:uid_executable_parameter;not null"`
+	ExecutableTag string      `gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
 	Executable    *Executable `gorm:"foreignKey:ExecutableTag"`
 	RequiresRoot  bool        `gorm:"not null"`
 	RequiresValue bool        `gorm:"not null"`
