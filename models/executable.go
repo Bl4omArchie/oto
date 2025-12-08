@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Binary struct {
+type Executable struct {
 	gorm.Model
 	Tag         string `gorm:"unique; not null type:string"`
 	Name        string `gorm:"not null type:string"`
@@ -17,9 +17,9 @@ type Binary struct {
 	Description string `gorm:"not null type:string"`
 }
 
-func NewBinary(name, version, path, description string) *Binary {
+func NewExecutable(name, version, path, description string) *Executable {
 	tag := GetTag(name, version)
-	return &Binary{
+	return &Executable{
 		Tag:         tag,
 		Name:        name,
 		Version:     version,
@@ -28,8 +28,8 @@ func NewBinary(name, version, path, description string) *Binary {
 	}
 }
 
-func FetchBinary(ctx context.Context, db *gorm.DB, column string, tag any) (*Binary, error) {
-	return simple.GetRowBy[Binary](ctx, db, column, tag)
+func FetchExecutable(ctx context.Context, db *gorm.DB, column string, tag any) (*Executable, error) {
+	return simple.GetRowBy[Executable](ctx, db, column, tag)
 }
 
 func GetTag(name string, version string) string {

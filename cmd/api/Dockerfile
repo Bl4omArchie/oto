@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o oto_api ./cmd/api
+RUN go build -o oto-api ./cmd/api
 
-EXPOSE 9090
-CMD ["./oto_api", "-h", "0.0.0.0", "-p", "9090"]
+EXPOSE 1515
+CMD ["./oto-api", "-h", "0.0.0.0", "-p", "1515"]

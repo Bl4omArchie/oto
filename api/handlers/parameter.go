@@ -41,8 +41,8 @@ func GetParameters(c *gin.Context, oto *oto.Instance) {
 	c.JSON(http.StatusOK, execs)
 }
 
-func GetParameter(binTag string, paramName string, c *gin.Context, oto *oto.Instance) {
-	param, err := simple.GetRowBy[models.Parameter](c, oto.Database, binTag, paramName)
+func GetParameter(execTag string, paramName string, c *gin.Context, oto *oto.Instance) {
+	param, err := simple.GetRowBy[models.Parameter](c, oto.Database, execTag, paramName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get parameter": err.Error()})
 		return

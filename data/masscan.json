@@ -1,0 +1,54 @@
+[
+  { "flag":"<targets>", "description":"IP(s) ou plage(s) cibles (CIDR, range ou adresse unique)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--range", "description":"Spécifier une plage ou réseau cible (équivalent aux targets non-préfixés)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+
+  { "flag":"-p", "description":"Ports à scanner (port, liste, plage). Ex: 80,443,1-1024 — support TCP/UDP (ex: U:53)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--ports", "description":"Même usage que -p (synonym)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+
+  { "flag":"--rate", "description":"Taux d’envoi de paquets (paquets/sec). 0 = illimité", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"int" },
+
+  { "flag":"--top-ports", "description":"Scanner les N ports les plus communs", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"int" },
+ 
+  { "flag":"--banners", "description":"Récupérer bannières/services après détection de port ouvert", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":false, "value_type":"bool" },
+  { "flag":"--http-user-agent", "description":"User-Agent HTTP à utiliser pour le banner grabexecg HTTP", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+
+  { "flag":"--open-only", "description":"N’affiche que les ports ouverts (pas les fermés)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"--exclude", "description":"Exclure une IP / plage de la cible", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--excludefile", "description":"Fichier contenant des IP/plages à exclure", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+
+  { "flag":"-e", "description":"Interface réseau à utiliser (raw)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--adapter", "description":"Synonyme de -e", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+
+  { "flag":"--adapter-ip", "description":"Adresse source IP à utiliser pour l’envoi des paquets", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--adapter-port", "description":"Port source à utiliser (ou plage) pour les paquets", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--adapter-mac", "description":"Adresse MAC source à utiliser", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--router-mac", "description":"MAC du routeur / passerelle : cible des paquets", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+
+  { "flag":"--ping", "description":"Inclure ICMP echo (ping) dans le scan", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"--ttl", "description":"TTL (Time To Live) des paquets sortants (défaut : 255)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"int" },
+
+  { "flag":"--wait", "description":"Temps (secondes) d’attente après envoi pour recevoir réponses (ou \"forever\")", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--offline", "description":"Pas d’envoi, mode simulation / debug (utile pour packet-trace)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"-sL", "description":"Génère une liste d’adresses aléatoires (pas de scan)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"--shard", "description":"Diviser le scan entre plusieurs instances (ex: 1/3, 2/3...)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--resume-index", "description":"Indice à partir duquel reprendre un scan interrompu / shardé", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"int" },
+  { "flag":"--resume-count", "description":"Nombre maximum de probes à envoyer (pour découper scan)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"int" },
+
+  { "flag":"--output-format", "description":"Format de sortie : xml, executable, grepable, list, json", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--output-filename", "description":"Nom de fichier pour sauvegarder les résultats", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"-oB", "description":"Sortie execaire dans fichier donné (shortcut)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--readscan", "description":"Lire un fichier de scan execaire pour conversion/affichage", "executable_tag":"masscan - 1.3.9", "requires_root":false, "requires_value":true, "value_type":"string" },
+
+  { "flag":"--packet-trace", "description":"Afficher résumé des paquets envoyés/reçus (debug)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":false, "value_type":"bool" },
+  { "flag":"--pfring", "description":"Forcer l’utilisation du driver PF_RING (si disponible)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"--interactive", "description":"Afficher résultats en temps réel (console)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"-c", "description":"Lire une config masscan depuis un fichier", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--conf", "description":"Synonyme de -c (config file)", "executable_tag":"masscan - 1.3.9", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"--echo", "description":"Ne pas scanner — sortir la configuration actuelle (utile pour générer un config-file)", "executable_tag":"masscan - 1.3.9", "requires_root":false, "requires_value":false, "value_type":"bool" }
+]

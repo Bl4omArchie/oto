@@ -5,12 +5,12 @@ import (
 	"time"
 	"context"
 
-	"gorm.io/gorm"
-	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/worker"
 	"github.com/Bl4omArchie/fme"
 	"github.com/Bl4omArchie/simple"
-	
+	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/worker"
+	"gorm.io/gorm"
+
 	"github.com/Bl4omArchie/oto/models"
 )
 
@@ -21,13 +21,13 @@ type Instance struct {
 }
 
 type Config struct {
-	PostgresDb			string	`env:"POSTGRES_DB,required"`
-	PostgresUser		string	`env:"POSTGRES_USER,required"`
-	PostgresPassword	string	`env:"POSTGRES_PASSWORD,required"`
-	PostgresPort		string	`env:"POSTGRES_PORT,required"`
-	PostgresSeed		string	`env:"POSTGRES_SEED,required"`
-	TemporalHost		string	`env:"TEMPORAL_HOST,required"`
-	TemporalNamespace	string	`env:"TEMPORAL_NAMESPACE,required"`
+	PostgresDb        string `env:"POSTGRES_DB,required"`
+	PostgresUser      string `env:"POSTGRES_USER,required"`
+	PostgresPassword  string `env:"POSTGRES_PASSWORD,required"`
+	PostgresPort      string `env:"POSTGRES_PORT,required"`
+	PostgresSeed      string `env:"POSTGRES_SEED,required"`
+	TemporalHost      string `env:"TEMPORAL_HOST,required"`
+	TemporalNamespace string `env:"TEMPORAL_NAMESPACE,required"`
 }
 
 func NewInstanceOto(envPath string) (*Instance, error) {
@@ -36,15 +36,14 @@ func NewInstanceOto(envPath string) (*Instance, error) {
 		return nil, err
 	}
 
-    db, err := simple.OpenDatabase(simple.GetPostgres("localhost", cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDb, cfg.PostgresPort))
-    if err != nil {
-        return nil, err
-    }
+	db, err := simple.OpenDatabase(simple.GetPostgres("localhost", cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDb, cfg.PostgresPort))
+	if err != nil {
+		return nil, err
+	}
 
 	client, err := client.Dial(client.Options{
 		HostPort:  cfg.TemporalHost,
 		Namespace: cfg.TemporalNamespace,
-		
 	})
 	if err != nil {
 		return nil, fmt.Errorf("couldn't get the temporal client. %v", err)
@@ -55,24 +54,24 @@ func NewInstanceOto(envPath string) (*Instance, error) {
 		ParamsSchema:   make(map[string]fme.Schema, 0),
 		TemporalClient: client,
 	}
-	instance.Database.AutoMigrate(&models.Binary{}, &models.Parameter{}, &models.Command{}, &models.Job{}, &models.FlagValue{})
+	instance.Database.AutoMigrate(&models.Executable{}, &models.Parameter{}, &models.Command{}, &models.Job{}, &models.FlagValue{})
 	return instance, nil
 }
 
 // === Add data ===
 
-func (i *Instance) AddBinary(name, version, binaryPath, description string) error {
-	bin := models.NewBinary(name, version, binaryPath, description)
+func (i *Instance) AddExecutable(name, version, executablePath, description string) error {
+	bin := models.NewExecutable(name, version, executablePath, description)
 	if err := i.Database.Save(bin).Error; err != nil {
-		return fmt.Errorf("failed to save Binary: %w", err)
+		return fmt.Errorf("failed to save Executable: %w", err)
 	}
 
 	return nil
 }
 
 func (i *Instance) AddParameter(ctx context.Context, binTag, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, Require, InterfersWith []string, s *fme.Schema) error {
-	// Retrieve binary
-	bin, err := models.FetchBinary(ctx, i.Database, "tag", binTag)
+	// Retrieve executable
+	bin, err := models.FetchExecutable(ctx, i.Database, "tag", binTag)
 	if err != nil {
 		return err
 	}
@@ -107,7 +106,7 @@ func (i *Instance) AddParameter(ctx context.Context, binTag, flag, description s
 }
 
 func (i *Instance) AddCommand(ctx context.Context, binID, cmdName, description string, flags []string, s *fme.Schema) error {
-	bin, err := models.FetchBinary(ctx, i.Database, "tag", binID)
+	bin, err := models.FetchExecutable(ctx, i.Database, "tag", binID)
 	if err != nil {
 		return err
 	}
@@ -155,31 +154,31 @@ func (i *Instance) ImportParameters(ctx context.Context, filename string, s *fme
 		return err
 	}
 
-    for _, p := range params {
-        err := i.AddParameter(
-            ctx,
-            p.BinaryTag,
-            p.Flag,
-            p.Description,
-            p.RequiresRoot,
-            p.RequiresValue,
-            p.ValueType,
-            p.RequireIDs,
-            p.InterferIDs,
+	for _, p := range params {
+		err := i.AddParameter(
+			ctx,
+			p.ExecutableTag,
+			p.Flag,
+			p.Description,
+			p.RequiresRoot,
+			p.RequiresValue,
+			p.ValueType,
+			p.RequireIDs,
+			p.InterferIDs,
 			s,
-        )
-        if err != nil {
-            return fmt.Errorf("failed to add parameter %s: %w", p.Flag, err)
-        }
-    }
+		)
+		if err != nil {
+			return fmt.Errorf("failed to add parameter %s: %w", p.Flag, err)
+		}
+	}
 	return nil
 }
 
-// == FME === 
-func (i *Instance) AddBinarySchema(ctx context.Context, binTag string) (*fme.Schema, error) {
+// == FME ===
+func (i *Instance) AddExecutableSchema(ctx context.Context, binTag string) (*fme.Schema, error) {
 	s := fme.NewSchema()
 
-	bin, err := models.FetchBinary(ctx, i.Database, "tag", binTag)
+	bin, err := models.FetchExecutable(ctx, i.Database, "tag", binTag)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +205,6 @@ func (i *Instance) AddBinarySchema(ctx context.Context, binTag string) (*fme.Sch
 	i.ParamsSchema[binTag] = *s
 	return s, nil
 }
-
 
 // === Temporal ===
 func (i *Instance) StartWorker(workerId string) error {

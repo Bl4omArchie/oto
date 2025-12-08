@@ -1,29 +1,29 @@
 package models
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 
 	"gorm.io/gorm"
 )
 
 type Command struct {
 	gorm.Model
-	Name			string		`gorm:"unique;not null"`
-	Description		string		`gorm:"type:text"`
-	BinaryID		int			`gorm:"not null"`
-	Binary			Binary		`gorm:"foreignKey:BinaryID"`
-	RequiresRoot	bool		`gorm:"not null"`
-	Parameters		[]Parameter	`gorm:"many2many:command_parameters"`
+	Name         string      `gorm:"unique;not null"`
+	Description  string      `gorm:"type:text"`
+	ExecutableID int         `gorm:"not null"`
+	Executable   Executable  `gorm:"foreignKey:ExecutableID"`
+	RequiresRoot bool        `gorm:"not null"`
+	Parameters   []Parameter `gorm:"many2many:command_parameters"`
 }
 
-func NewCommand(cmdName, description string, bin *Binary, flags []Parameter) *Command {
+func NewCommand(cmdName, description string, exec *Executable, flags []Parameter) *Command {
 	return &Command{
-		Name: cmdName,
-		BinaryID: int(bin.ID),
-		Binary: *bin,
-		Description: description,
-		Parameters: flags,
+		Name:         cmdName,
+		ExecutableID: int(exec.ID),
+		Executable:   *exec,
+		Description:  description,
+		Parameters:   flags,
 	}
 }
 

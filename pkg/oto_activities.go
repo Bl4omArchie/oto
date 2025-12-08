@@ -5,8 +5,8 @@ import (
 	"context"
 	"os/exec"
 
-	"gorm.io/gorm"
 	"github.com/Bl4omArchie/oto/models"
+	"gorm.io/gorm"
 )
 
 type Activities struct {
@@ -16,7 +16,7 @@ type Activities struct {
 type (
 	CommandRaw struct {
 		Header string
-		Args []string
+		Args   []string
 	}
 
 	JobOutput struct {
@@ -25,14 +25,13 @@ type (
 	}
 )
 
-
 func (a *Activities) CraftJob(ctx context.Context, jobName string) (*CommandRaw, error) {
 	job, err := models.FetchJob(ctx, a.DB, "name", jobName)
 	if err != nil {
 		return nil, err
 	}
 
-	header := job.Command.Binary.Path
+	header := job.Command.Executable.Path
 	if job.Command.RequiresRoot {
 		header = "sudo " + header
 	}

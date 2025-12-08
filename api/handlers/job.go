@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"net/http"
-	
-	"github.com/gin-gonic/gin"
-	"github.com/Bl4omArchie/simple"
-	"github.com/Bl4omArchie/oto/pkg"
+
 	"github.com/Bl4omArchie/oto/models"
+	oto "github.com/Bl4omArchie/oto/pkg"
+	"github.com/Bl4omArchie/simple"
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
 )
 

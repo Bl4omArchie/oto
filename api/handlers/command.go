@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"net/http"
-	
-	"github.com/gin-gonic/gin"
-	"github.com/Bl4omArchie/simple"
-	"github.com/Bl4omArchie/oto/pkg"
+
 	"github.com/Bl4omArchie/oto/models"
+	oto "github.com/Bl4omArchie/oto/pkg"
+	"github.com/Bl4omArchie/simple"
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
 )
 
@@ -41,7 +41,7 @@ func GetCommands(c *gin.Context, oto *oto.Instance) {
 	c.JSON(http.StatusOK, cmds)
 }
 
-func GetCommand(binTag string, cmdName string, c *gin.Context, oto *oto.Instance) {
+func GetCommand(execTag string, cmdName string, c *gin.Context, oto *oto.Instance) {
 	cmd, err := simple.GetRowBy[models.Command](c, oto.Database, "name", cmdName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get command": err.Error()})

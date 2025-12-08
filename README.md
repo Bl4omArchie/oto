@@ -1,26 +1,20 @@
 # OTO - workflow automation service
 
-OTO is a golang service for workflow automation.
+OTO is a golang service for workflow automation. You can schedule executable execution, defined commands and jobs.
+
+- 1 executable = several parameters
+
+- several parameters = 1 command
+
+- 1 command with defined values = 1 job
+
+- 1 workflow = several jobs
 
 
-Currently, OTO is providing a single but powerful feature : **RunJob**. 
-This task allow you to run binaries automatically with pre defined values.
 
-# How to use OTO ?
+# OTO guides
 
-There is several services in OTO all of them launched from the docker compose
-- Restful API : powered by Gin
-- Web dashboard : simple html/css/js dashboard for easy management
-- Go package : get OTO package to use the service directly in your own code
-- Postgresql DB : for data persistency (linked to Temporal)
-- Temporal server : launch workers and run workflows
-- Temporal web UI : monitoring of workflows
-
-To launch everything use the following command :
-```sh
-docker compose up -d
-```
-Before it you must  set a .env file with credentiels for the postgresql DB.
+Check **docs/** folder to read every guides.
 
 
 # FME : flag matching engine
@@ -38,7 +32,7 @@ Here si the full notebook for further details and in coming fearures [click here
 
 # Integration of Temporal
 
-The very core of my service is now done and I can now think about scheduling and monitoring larger configuration of binaries with a more large amount of commands.
+The very core of my service is now done and I can now think about scheduling and monitoring larger configuration of executables with a more large amount of commands.
 To do so, I have to handle concurrency, events log and more to make a robust solution.
 As a solution, I've started the integration of Temporal.io in the `dev` branch where I launch, through a docker compose multiple services like temporal.io, temporal ui, postgresl and my API.
 
@@ -51,6 +45,9 @@ Why Temporal ?
 # Roadmap
 
 Current work :
-- [] import/export config to json
-- [] docker compose deployement
-- [] 
+- [x] Import/export config to json
+- [x] Docker compose deployement
+- [] Temporal integration : workflows
+- [] Temporal integration : scheduling
+- [] Write installation guide
+- [] Atlas for database migration

@@ -7,7 +7,6 @@ import (
 	"github.com/Bl4omArchie/oto/models"
 )
 
-
 func TestFillDatabase(t *testing.T) {
 	instance, err := NewInstanceOto("../test.env")
 	if err != nil {
@@ -16,16 +15,16 @@ func TestFillDatabase(t *testing.T) {
 
 	var ctx context.Context = context.Background()
 
-	err = instance.AddBinary("nmap", "7.98", "/usr/bin/nmap", "scanning tool")
+	err = instance.AddExecutable("nmap", "7.98", "/usr/exec/nmap", "scanning tool")
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
 
-	s, err := instance.AddBinarySchema(ctx, "nmap - 7.98")
+	s, err := instance.AddExecutableSchema(ctx, "nmap - 7.98")
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	
+
 	err = instance.AddParameter(ctx, "nmap - 7.98", "-sL", "scan option for determine which host are online", false, false, models.String, []string{}, []string{}, s)
 	if err != nil {
 		t.Fatalf("%v", err)
@@ -60,7 +59,7 @@ func TestIncorrectSchema(t *testing.T) {
 
 	var ctx context.Context = context.Background()
 
-	s, err := instance.AddBinarySchema(ctx, "nmap - 7.98")
+	s, err := instance.AddExecutableSchema(ctx, "nmap - 7.98")
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
