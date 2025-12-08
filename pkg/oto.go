@@ -3,7 +3,9 @@ package oto
 import (
 	"fmt"
 	"time"
+	"bytes"
 	"context"
+	"os/exec"
 
 	"github.com/Bl4omArchie/fme"
 	"github.com/Bl4omArchie/simple"
@@ -18,6 +20,13 @@ type Instance struct {
 	Database       *gorm.DB
 	ParamsSchema   map[string]fme.Schema
 	TemporalClient client.Client
+	Workers map[string]WorkerItem
+}
+
+type WorkerItem struct {
+	WorkerID string
+	Worker worker.Worker
+	OutputError chan(error)
 }
 
 type Config struct {
@@ -131,6 +140,7 @@ func (i *Instance) AddCommand(ctx context.Context, binID, cmdName, description s
 
 func (i *Instance) AddJob(ctx context.Context, cmdName, jobName string, flagValues map[*models.Parameter]string) error {
 	// TODO : verify key-value pairs if flags are correct
+	// Tmp fix : ask directly for the parameter
 	cmd, err := models.FetchCommand(ctx, i.Database, "name", cmdName)
 	if err != nil {
 		return err
@@ -174,6 +184,36 @@ func (i *Instance) ImportParameters(ctx context.Context, filename string, s *fme
 	return nil
 }
 
+// Tmp function for demo only. This will be erased when Temporal we'll be fully integrated.
+func (i *Instance) RunJobDemo(ctx context.Context, jobName string) (*JobOutput, error) {
+	job, err := models.FetchJob(ctx, i.Database, "name", jobName)
+	if err != nil {
+		return nil, err
+	}
+
+	header := job.Command.Executable.Path
+	if job.Command.RequiresRoot {
+		header = "sudo " + header
+	}
+
+	var args []string
+	for _, fv := range job.FlagValues {
+		args = append(args, fv.Parameter.Flag, fv.Value)
+	}
+
+	var stdout, stderr bytes.Buffer
+	cmd := exec.CommandContext(ctx, header, args...)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err = cmd.Run()
+	return &JobOutput{
+		Stdout: stdout.String(),
+		Stderr: stderr.String(),
+	}, err
+}
+
+
 // == FME ===
 func (i *Instance) AddExecutableSchema(ctx context.Context, binTag string) (*fme.Schema, error) {
 	s := fme.NewSchema()
@@ -207,16 +247,59 @@ func (i *Instance) AddExecutableSchema(ctx context.Context, binTag string) (*fme
 }
 
 // === Temporal ===
-func (i *Instance) StartWorker(workerId string) error {
-	w := worker.New(i.TemporalClient, workerId, worker.Options{})
+func (i *Instance) NewWorkerItem(workerID string) WorkerItem {
+	return WorkerItem{
+		WorkerID: workerID,
+		Worker: worker.New(i.TemporalClient, workerID, worker.Options{}),
+		OutputError: make(chan error),
+	}
+}
+
+// Create a new worker with the given ID. The worker will then be runned concurrently.
+func (i *Instance) NewWorker(workerID string) error {
+	if _, ok := i.Workers[workerID]; ok {
+		return fmt.Errorf("worker %s already.", workerID)
+	}
+
+	w := i.NewWorkerItem(workerID)
+	i.Workers[workerID] = w
 
 	acts := &Activities{DB: i.Database}
 
-	w.RegisterWorkflow(WorkflowRunJob)
-	w.RegisterActivity(acts.RunJob)
+	w.Worker.RegisterWorkflow(WorkflowRunJob)
+	w.Worker.RegisterActivity(acts.RunJob)
 
-	return w.Run(worker.InterruptCh())
+	go func() {
+		if err := w.Worker.Run(worker.InterruptCh()); err != nil {
+			w.OutputError <- err
+		}
+	}()
+
+	return nil
 }
+
+// Stop the worker. Every in-going tasks will be done, and then the worker will stop.
+func (i *Instance) StopWorker(workerID string) error {
+	w, ok := i.Workers[workerID]
+	if !ok {
+		return fmt.Errorf("couldn't find workerID. First create the worker.")
+	}
+
+	w.Worker.Stop()
+	return nil
+}
+
+// Resume the worker.
+func (i *Instance) ResumeWorker(workerID string) error {
+	w, ok := i.Workers[workerID]
+	if !ok {
+		return fmt.Errorf("couldn't find workerID. First create the worker.")
+	}
+
+	w.Worker.Stop()
+	return nil
+}
+
 
 func (i *Instance) RunJobWorkflow(ctx context.Context, jobName string) (*JobOutput, error) {
 	workflowOptions := client.StartWorkflowOptions{
