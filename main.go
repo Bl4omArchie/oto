@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/Bl4omArchie/oto/models"
+	"github.com/Bl4omArchie/oto/models"
 	oto "github.com/Bl4omArchie/oto/pkg"
 
 	_ "ariga.io/atlas-provider-gorm/gormschema"
@@ -19,20 +19,20 @@ func fill_database() error {
 		return err
 	}
 
-	// err = instance.AddExecutable("nmap", "7.98", "/usr/exec/nmap", "scanning tool")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	err = instance.AddExecutable("nmap", "7.98", "/usr/exec/nmap", "scanning tool")
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	// err = instance.AddExecutable("openssl", "3.5.3", "/usr/exec/openssl", "cryptographic tool")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	err = instance.AddExecutable("openssl", "3.5.3", "/usr/exec/openssl", "cryptographic tool")
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	// err = instance.AddExecutable("masscan", "1.3.9", "/usr/exec/masscan", "scanning tool")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	err = instance.AddExecutable("masscan", "1.3.9", "/usr/exec/masscan", "scanning tool")
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	s, err := instance.AddExecutableSchema(ctx, "nmap - 7.98")
 	if err != nil {
@@ -47,10 +47,10 @@ func fill_database() error {
 		return err
 	}
 
-	// err = instance.ImportParameters(ctx, "data/nmap.json", s)
-	// if err != nil {
-	// 	return nil
-	// }
+	err = instance.ImportParameters(ctx, "data/nmap.json", s)
+	if err != nil {
+		return nil
+	}
 
 	err = instance.ImportParameters(ctx, "data/openssl.json", s)
 	if err != nil {
@@ -62,13 +62,13 @@ func fill_database() error {
 		return nil
 	}
 
-	// err = instance.AddCommand(ctx, "nmap - 7.98", "reco", "determine which hosts are online", []string{"-PS"}, s)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	err = instance.AddCommand(ctx, "nmap - 7.98", "reco", "determine which hosts are online", []string{"-PS"}, s)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	// arg1, err := models.FetchParameter(ctx, instance.Database, "flag", "-PS")
-	// instance.AddJob(ctx, "reco", "target gorm.io", map[*models.Parameter]string{arg1: "185.199.111.153"})
+	arg1, err := models.FetchParameter(ctx, instance.Database, "flag", "-PS")
+	instance.AddJob(ctx, "reco", "target gorm.io", map[*models.Parameter]string{arg1: "185.199.111.153"})
 
 	return nil
 }

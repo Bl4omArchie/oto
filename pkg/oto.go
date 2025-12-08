@@ -213,8 +213,7 @@ func (i *Instance) StartWorker(workerId string) error {
 	acts := &Activities{DB: i.Database}
 
 	w.RegisterWorkflow(WorkflowRunJob)
-	w.RegisterActivity(acts.CraftJob)
-	w.RegisterActivity(acts.ExecuteCommand)
+	w.RegisterActivity(acts.RunJob)
 
 	return w.Run(worker.InterruptCh())
 }

@@ -13,14 +13,8 @@ func WorkflowRunJob(ctx workflow.Context, jobName string) (*JobOutput, error) {
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	var cmdRaw CommandRaw
-	err := workflow.ExecuteActivity(ctx, "CraftJob", jobName).Get(ctx, &cmdRaw)
-	if err != nil {
-		return nil, err
-	}
-
 	var output JobOutput
-	err = workflow.ExecuteActivity(ctx, "ExecuteCommand", cmdRaw.Header, cmdRaw.Args).Get(ctx, &output)
+	err := workflow.ExecuteActivity(ctx, "RunCommand", jobName).Get(ctx, &output)
 	if err != nil {
 		return nil, err
 	}

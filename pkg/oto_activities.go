@@ -14,18 +14,13 @@ type Activities struct {
 }
 
 type (
-	CommandRaw struct {
-		Header string
-		Args   []string
-	}
-
 	JobOutput struct {
 		Stdout string
 		Stderr string
 	}
 )
 
-func (a *Activities) CraftJob(ctx context.Context, jobName string) (*CommandRaw, error) {
+func (a *Activities) RunJob(ctx context.Context, jobName string) (*JobOutput, error) {
 	job, err := models.FetchJob(ctx, a.DB, "name", jobName)
 	if err != nil {
 		return nil, err
@@ -41,17 +36,13 @@ func (a *Activities) CraftJob(ctx context.Context, jobName string) (*CommandRaw,
 		args = append(args, fv.Parameter.Flag, fv.Value)
 	}
 
-	return &CommandRaw{Header: header, Args: args}, nil
-}
-
-func (a *Activities) ExecuteCommand(ctx context.Context, cmdRaw *CommandRaw) (*JobOutput, error) {
 	var stdout, stderr bytes.Buffer
 
-	cmd := exec.CommandContext(ctx, cmdRaw.Header, cmdRaw.Args...)
+	cmd := exec.CommandContext(ctx, header, args...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	err := cmd.Run()
+	err = cmd.Run()
 	return &JobOutput{
 		Stdout: stdout.String(),
 		Stderr: stderr.String(),

@@ -62,8 +62,6 @@ services:
   atlas-migration:
     image: arigaio/atlas:latest
     container_name: oto-atlas-migration
-    depends_on:
-      - postgres
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -73,6 +71,8 @@ services:
     command: >
       migrate apply
       --dir file://migrations --url postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
+    depends_on:
+      - postgres
     volumes:
       - ./migrations:/migrations
     networks:
@@ -88,7 +88,6 @@ services:
       - "1515:1515"
     networks:
       - oto-network
-    restart: unless-stopped
 
   oto-web:
     container_name: oto-service-web
@@ -100,7 +99,6 @@ services:
       - "2929:2929"
     networks:
       - oto-network
-    restart: unless-stopped
 
 volumes:
   pgdata:

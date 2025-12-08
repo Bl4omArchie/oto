@@ -68,7 +68,5 @@
   { "flag":"--release-memory", "description":"Free memory before exit (for debugging)", "executable_tag": "nmap - 7.98", "requires_root":false, "requires_value":false, "value_type":"bool"} ,
 
   { "flag":"-V", "description":"Show version and exit", "executable_tag": "nmap - 7.98", "requires_root":false, "requires_value":false, "value_type":"bool"} ,
-  { "flag":"-h", "description":"Show help / usage summary", "executable_tag": "nmap - 7.98", "requires_root":false, "requires_value":false, "value_type":"bool"},
-  { "flag":"-sT", "description":"TCP connect() scan", "executable_tag": "nmap - 7.98", "requires_root":false, "requires_value":false, "value_type":"bool", "interfer_ids":["-sS","-sU","-sA","-sW","-sM","-sN","-sF","-sX","-sO","-b"] },
-  { "flag":"-sS", "description":"TCP SYN scan (default stealth scan)", "executable_tag": "nmap - 7.98", "requires_root":true, "requires_value":false, "value_type":"bool", "interfer_ids":["-sU","-sA","-sW","-sM","-sN","-sF","-sX","-sO","-b"] }
+  { "flag":"-h", "description":"Show help / usage summary", "executable_tag": "nmap - 7.98", "requires_root":false, "requires_value":false, "value_type":"bool"}
 ]
