@@ -42,6 +42,14 @@ Why Temporal ?
 - Workflows and workers for my jobs
 - Mature and globally used framework
 
+# Atlas migration
+
+```bash
+atlas schema inspect --env gorm --url postgres://oto-admin:1234@localhost:5432/oto-storage?sslmode=disable > schema.hcl
+atlas migrate diff --env gorm 
+atlas migrate apply --dir file://migrations --url postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
+```
+
 # Roadmap
 
 Current work :
@@ -51,3 +59,5 @@ Current work :
 - [ ] Temporal integration : scheduling
 - [ ] Write installation guide
 - [ ] Atlas for automatic database migration
+- [ ] Change ExecutableTag to ExecutableID in Parameter
+- [ ] Update AddJob() for map parameter

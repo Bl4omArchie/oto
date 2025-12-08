@@ -11,7 +11,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-        - oto-network
+        - netoto
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -26,7 +26,7 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
-        - oto-network
+        - netoto
 
   temporal:
     container_name: oto-temporal-server
@@ -42,7 +42,7 @@ services:
     depends_on:
         - postgres
     networks:
-        - oto-network
+        - netoto
     ports:
       - "7233:7233"
 
@@ -57,7 +57,7 @@ services:
     depends_on:
       - temporal
     networks:
-        - oto-network
+        - netoto
 
   atlas-migration:
     image: arigaio/atlas:latest
@@ -76,8 +76,8 @@ services:
     volumes:
       - ./migrations:/migrations
     networks:
-      - oto-network
-
+      - netoto
+ 
   oto-api:
     container_name: oto-service-api
     build:
@@ -87,7 +87,7 @@ services:
     ports:
       - "1515:1515"
     networks:
-      - oto-network
+      - netoto
 
   oto-web:
     container_name: oto-service-web
@@ -98,12 +98,12 @@ services:
     ports:
       - "2929:2929"
     networks:
-      - oto-network
+      - netoto
 
 volumes:
   pgdata:
   pgadmin_data:
 
 networks:
-    oto-network:
+    netoto:
         driver: bridge
