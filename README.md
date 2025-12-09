@@ -56,9 +56,9 @@ Current work :
 - [x] Import/export config to json
 - [x] Docker compose deployement
 - [x] Write installation guide
-- [ ] Demo with openSSL rsa keypair generation
+- [x] Update AddJob() for map parameter
+- [x] Demo with openSSL rsa keypair generation
 - [ ] Atlas for automatic database migration
 - [ ] Change ExecutableTag to ExecutableID in Parameter
-- [ ] Update AddJob() for map parameter
 - [ ] Temporal integration : workflows
 - [ ] Temporal integration : scheduling

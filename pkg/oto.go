@@ -63,6 +63,8 @@ func NewInstanceOto(envPath string) (*Instance, error) {
 		ParamsSchema:   make(map[string]fme.Schema, 0),
 		TemporalClient: client,
 	}
+
+	// tmp : automigrate with gorm until we deploy atlas completly
 	instance.Database.AutoMigrate(&models.Executable{}, &models.Parameter{}, &models.Command{}, &models.Job{}, &models.FlagValue{})
 	return instance, nil
 }
@@ -138,9 +140,7 @@ func (i *Instance) AddCommand(ctx context.Context, binID, cmdName, description s
 	return nil
 }
 
-func (i *Instance) AddJob(ctx context.Context, cmdName, jobName string, flagValues map[*models.Parameter]string) error {
-	// TODO : verify key-value pairs if flags are correct
-	// Tmp fix : ask directly for the parameter
+func (i *Instance) AddJob(ctx context.Context, cmdName, jobName string, flagValues map[string]string) error {
 	cmd, err := models.FetchCommand(ctx, i.Database, "name", cmdName)
 	if err != nil {
 		return err
@@ -148,7 +148,11 @@ func (i *Instance) AddJob(ctx context.Context, cmdName, jobName string, flagValu
 
 	var flagValuesToSave []*models.FlagValue
 	for flag, value := range flagValues {
-		flagValuesToSave = append(flagValuesToSave, models.NewFlagValue(flag, value))
+		param, err := simple.GetRowBy[models.Parameter](ctx, i.Database, "flag", flag)
+		if err != nil {
+			return fmt.Errorf("in your flag values, you indicated a parameter %s that doesn't belong to your command %s. %v", flag, cmd.Name, err)
+		}
+		flagValuesToSave = append(flagValuesToSave, models.NewFlagValue(param, value))
 	}
 
 	job := models.NewJob(jobName, cmd, flagValuesToSave)
@@ -165,18 +169,7 @@ func (i *Instance) ImportParameters(ctx context.Context, filename string, s *fme
 	}
 
 	for _, p := range params {
-		err := i.AddParameter(
-			ctx,
-			p.ExecutableTag,
-			p.Flag,
-			p.Description,
-			p.RequiresRoot,
-			p.RequiresValue,
-			p.ValueType,
-			p.RequireIDs,
-			p.InterferIDs,
-			s,
-		)
+		err := i.AddParameter(ctx, p.ExecutableTag, p.Flag, p.Description, p.RequiresRoot, p.RequiresValue, p.ValueType, p.RequireIDs, p.InterferIDs, s)
 		if err != nil {
 			return fmt.Errorf("failed to add parameter %s: %w", p.Flag, err)
 		}
@@ -191,15 +184,24 @@ func (i *Instance) RunJobDemo(ctx context.Context, jobName string) (*JobOutput, 
 		return nil, err
 	}
 
-	header := job.Command.Executable.Path
+	var header string = job.Command.Executable.Path
+	var args []string
+
 	if job.Command.RequiresRoot {
-		header = "sudo " + header
+		args = append(args, job.Command.Executable.Path)
+		header = "sudo"
 	}
 
-	var args []string
 	for _, fv := range job.FlagValues {
-		args = append(args, fv.Parameter.Flag, fv.Value)
+		// If the argument doesn't have value, we just add the flag to avoid a whitespace
+		if fv.Value == "" {
+			args = append(args, fv.Parameter.Flag)
+		} else {
+			args = append(args, fv.Parameter.Flag, fv.Value)
+		}
 	}
+
+	fmt.Println(header, args)
 
 	var stdout, stderr bytes.Buffer
 	cmd := exec.CommandContext(ctx, header, args...)

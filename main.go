@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/Bl4omArchie/oto/models"
+	_ "github.com/Bl4omArchie/oto/models"
 	oto "github.com/Bl4omArchie/oto/pkg"
 
 	_ "ariga.io/atlas-provider-gorm/gormschema"
@@ -65,13 +65,8 @@ func full_data() error {
 	if err != nil {
 		return err
 	}
-
-	arg1, err := models.FetchParameter(ctx, instance.Database, "flag", "genpkey")
-	arg2, err := models.FetchParameter(ctx, instance.Database, "flag", "-algorithm")
-	arg3, err := models.FetchParameter(ctx, instance.Database, "flag", "-pkeyopt")
-	arg4, err := models.FetchParameter(ctx, instance.Database, "flag", "-out")
 	
-	if err := instance.AddJob(ctx, "GenRSA", "GenRSA-2048", map[*models.Parameter]string{arg1: "", arg2: "RSA", arg3: "rsa_keygen_bits:2048", arg4: "key.pem"}); err != nil {
+	if err := instance.AddJob(ctx, "GenRSA", "GenRSA-2048", map[string]string{"genpkey": "", "-algorithm": "RSA", "-pkeyopt": "rsa_keygen_bits:2048", "-out": "key.pem"}); err != nil {
 		return err
 	}
 
@@ -112,12 +107,7 @@ func launch_demo() error {
 		return err
 	}
 
-	arg1, err := models.FetchParameter(ctx, instance.Database, "flag", "genpkey")
-	arg2, err := models.FetchParameter(ctx, instance.Database, "flag", "-algorithm")
-	arg3, err := models.FetchParameter(ctx, instance.Database, "flag", "-pkeyopt")
-	arg4, err := models.FetchParameter(ctx, instance.Database, "flag", "-out")
-	
-	if err := instance.AddJob(ctx, "GenRSA", "GenRSA-2048", map[*models.Parameter]string{arg1: "", arg2: "RSA", arg3: "rsa_keygen_bits:2048", arg4: "key.pem"}); err != nil {
+	if err := instance.AddJob(ctx, "GenRSA", "GenRSA-2048", map[string]string{"genpkey": "", "-algorithm": "RSA", "-pkeyopt": "rsa_keygen_bits:2048", "-out": "key.pem"}); err != nil {
 		return err
 	}
 
@@ -150,5 +140,5 @@ func test() error {
 
 
 func main() {
-	fmt.Println(test())
+	fmt.Println(launch_demo())
 }

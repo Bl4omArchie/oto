@@ -18,9 +18,9 @@ type Job struct {
 
 type FlagValue struct {
 	gorm.Model
-	ParameterId  int		`gorm:"not null"`
+	ParameterId  int		`gorm:"not null;uniqueIndex:uid_flag_value"`
 	Parameter    *Parameter	`gorm:"foreignKey:ParameterId"`
-	Value string			`gorm:"not null"`
+	Value string			`gorm:"not null;uniqueIndex:uid_flag_value"`
 }
 
 
