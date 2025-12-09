@@ -1,0 +1,46 @@
+[
+  { "flag":"-connect", "description":"Remote host and port to connect to", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+  { "flag":"-servername", "description":"SNI server name", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+  { "flag":"-starttls", "description":"Protocol for STARTTLS handshake", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+  { "flag":"-quiet", "description":"Suppress protocol messages", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-showcerts", "description":"Display server certificate chain", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-CAfile", "description":"Specify trusted CA file", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+  { "flag":"-CApath", "description":"Specify trusted CA directory", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+
+  { "flag":"-in", "description":"Input file", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+  { "flag":"-out", "description":"Output file", "executable_tag":"openssl - 3.5.3", "requires_root":true, "requires_value":true, "value_type":"string" },
+  { "flag":"-text", "description":"Print full text of certificate/key", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-serial", "description":"Print certificate serial number", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-fingerprint", "description":"Print certificate fingerprint", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"-new", "description":"Generate new request or key", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-nodes", "description":"Do not encrypt private key", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-key", "description":"Use existing key file", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+  { "flag":"-keyout", "description":"Write generated key to file", "executable_tag":"openssl - 3.5.3", "requires_root":true, "requires_value":true, "value_type":"string" },
+
+  { "flag":"-pkeyopt", "description":"Set key options (key size...)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+  { "flag":"-algorithm", "description":"Set key algorithm (RSA, EC...)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+  { "flag":"-sha256", "description":"Use SHA-256 digest", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-sha512", "description":"Use SHA-512 digest", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-verify", "description":"Verify signature using public key", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+  { "flag":"-signature", "description":"Signature file for verification", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":true, "value_type":"string" },
+
+  { "flag":"genpkey", "description":"Generate private keys (RSA, EC, Ed25519, X25519)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"pkey", "description":"Manipulate private/public keys", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"pkeyparam", "description":"Display key parameters (RSA, EC)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"pkeyutl", "description":"Perform crypto operations: sign, verify, encrypt, decrypt", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"req", "description":"Generate or process CSR (Certificate Signing Request)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"x509", "description":"Manipulate or generate X.509 certificates", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"enc", "description":"Symmetric encryption (AES, DES, etc.)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"-salt", "description":"Use salt (recommended)", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"dgst", "description":"Compute message digests: SHA256, SHA512, MD5", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"rand", "description":"Generate cryptographic random bytes", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"verify", "description":"Verify a certificate against a CA", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+
+  { "flag":"version", "description":"Display OpenSSL version", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" },
+  { "flag":"help", "description":"Display general help", "executable_tag":"openssl - 3.5.3", "requires_root":false, "requires_value":false, "value_type":"bool" }
+]

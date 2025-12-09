@@ -1,9 +1,22 @@
 # Changelog
 
+
+**02/12/25** :
+- Add `envPath` parameter for NewInstanceOto() : you can now specify DB you want to use
+- ImportParameters() can import a json file of parameters into the DB
+- New struct for json data : ParameterRaw
+
+**25/11/25** :
+- Add dockerfile for API
+- Replace sqlite with postgres
+- Add docker compose for postgres, pgadmin, temporal, temporal-ui and the api server
+- Add test package
+- Add .env file for a more secure database connection
+
 **23/11/25** :
 - Integration of (FME) Flag Matching Engine for fast dependencies and conflicts check for Commands
 - Typo : 
-    - Executable becomes Binary
+    - Executable becomes Executable
     - JobCommand becomes Job
 - New functions to fetch more easily models
 

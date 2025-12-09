@@ -1,14 +1,14 @@
 package models
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 
 	"gorm.io/gorm"
 )
 
-
 type ValueType string
+
 const (
 	Integer   ValueType = "int"
 	String    ValueType = "string"
@@ -17,47 +17,70 @@ const (
 	Float     ValueType = "float"
 	IPAddress ValueType = "ip"
 	Port      ValueType = "port"
-	None	  ValueType = ""
+	None      ValueType = ""
 )
-
 type Parameter struct {
 	gorm.Model
-	Flag			string			`gorm:"unique;not null"`
-	Description		string			`gorm:"type:text"`
-	BinaryID		int				`gorm:"not null"`
-	Binary			*Binary			`gorm:"foreignKey:BinaryID"`
-	RequiresRoot	bool			`gorm:"not null"`
-	RequiresValue	bool			`gorm:"not null"`
-	ValueType		ValueType		`gorm:"not null"`
-	Require			[]Parameter		`gorm:"many2many:flag_dependencies;joinForeignKey:flag_id;joinReferences:requires_id"`
-    Interfer		[]Parameter		`gorm:"many2many:flag_conflicts;joinForeignKey:flag_id;joinReferences:interfer_id"`
+	Flag          string      `gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
+	Description   string      `gorm:"type:text"`
+	ExecutableTag string      `gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
+	Executable    *Executable `gorm:"foreignKey:ExecutableTag"`
+	RequiresRoot  bool        `gorm:"not null"`
+	RequiresValue bool        `gorm:"not null"`
+	ValueType     ValueType   `gorm:"not null"`
+	Require       []Parameter `gorm:"many2many:flag_dependencies;joinForeignKey:flag_id;joinReferences:requires_id"`
+	Interfer      []Parameter `gorm:"many2many:flag_conflicts;joinForeignKey:flag_id;joinReferences:interfer_id"`
 }
 
-// Newmodels.Parameter returns a new models.Parameter with a flag, description, the corresponding Binary ID, if the flag needs root access or a value and the value type 
-// ValueType can be set to "" (None) 
-func NewParameter(flag, description string, bin *Binary, requiresRoot, requiresValue bool, valueType ValueType, interfer, require []Parameter) *Parameter {
+type ParameterRaw struct {
+	Flag          string    `json:"flag"`
+	Description   string    `json:"description"`
+	ExecutableTag string    `json:"executable_tag"`
+	RequiresRoot  bool      `json:"requires_root"`
+	RequiresValue bool      `json:"requires_value"`
+	ValueType     ValueType `json:"value_type"`
+	RequireIDs    []string  `json:"require_ids"`
+	InterferIDs   []string  `json:"interfer_ids"`
+}
+
+// Newmodels.Parameter returns a new models.Parameter with a flag, description, the corresponding Executable ID, if the flag needs root access or a value and the value type
+// ValueType can be set to "" (None)
+func NewParameter(flag, description string, exec *Executable, requiresRoot, requiresValue bool, valueType ValueType, require, interfer []Parameter) *Parameter {
 	return &Parameter{
-		Flag: flag,
-		BinaryID: int(bin.ID),
-		Binary: bin,
-		Description: description,
-		RequiresRoot: requiresRoot,
+		Flag:          flag,
+		ExecutableTag: exec.Tag,
+		Executable:    exec,
+		Description:   description,
+		RequiresRoot:  requiresRoot,
 		RequiresValue: requiresValue,
-		ValueType: valueType,
-		Interfer: interfer,
-		Require: require,
+		ValueType:     valueType,
+		Interfer:      interfer,
+		Require:       require,
 	}
 }
 
-// FetchParameter returns the first parameter corresponding to the given column and given flag.
-func FetchParameter(ctx context.Context, db *gorm.DB, column string, flag any) (*Parameter, error) {
+func NewParameterRaw(flag, description, executableTag string, requiresRoot, requiresValue bool, valueType ValueType, require, interfer []string) *ParameterRaw {
+	return &ParameterRaw{
+		Flag:          flag,
+		Description:   description,
+		ExecutableTag: executableTag,
+		RequiresRoot:  requiresRoot,
+		RequiresValue: requiresValue,
+		ValueType:     valueType,
+		RequireIDs:    require,
+		InterferIDs:   interfer,
+	}
+}
+
+// FetchParameter returns the first parameter corresponding to the given column and value.
+func FetchParameter(ctx context.Context, db *gorm.DB, column string, value any) (*Parameter, error) {
 	var param Parameter
 
 	err := db.WithContext(ctx).
-		Preload("Binary").
+		Preload("Executable").
 		Preload("Interfer").
 		Preload("Require").
-		Where(fmt.Sprintf("%s = ?", column), flag).
+		Where(fmt.Sprintf("%s = ?", column), value).
 		First(&param).Error
 	if err != nil {
 		return nil, err
@@ -66,12 +89,12 @@ func FetchParameter(ctx context.Context, db *gorm.DB, column string, flag any) (
 	return &param, nil
 }
 
-// FetchParameter returns every parameters corresponding to the given column and given flag..
+// FetchParameter returns every parameters corresponding to the given column and value.
 func FetchParameters(ctx context.Context, db *gorm.DB, column string, value any) ([]Parameter, error) {
 	var params []Parameter
 
 	err := db.WithContext(ctx).
-		Preload("Binary").
+		Preload("Executable").
 		Preload("Interfer").
 		Preload("Require").
 		Where(fmt.Sprintf("%s = ?", column), value).
@@ -97,7 +120,7 @@ func FetchFlagParameters(ctx context.Context, db *gorm.DB, column string, flags 
 	return result, nil
 }
 
-
+// AllValueTypes list every supported type for a parameter value
 func AllValueTypes() []ValueType {
 	return []ValueType{Integer, String, Tuple, FilePath, Float, IPAddress, Port}
 }

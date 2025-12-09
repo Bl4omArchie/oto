@@ -1,37 +1,109 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16
+    container_name: oto-postgres-storage
     environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+        - netoto
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: oto-postgres-dashboard
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+        - netoto
+
+  temporal:
+    container_name: oto-temporal-server
+    image: temporalio/auto-setup:latest
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PWD=${POSTGRES_PASSWORD}
+      - POSTGRES_SEEDS=${POSTGRES_SEED}
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    depends_on:
+        - postgres
+    networks:
+        - netoto
+    ports:
+      - "7233:7233"
+
+  temporal-ui:
+    container_name: oto-temporal-ui
+    image: temporalio/ui:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    depends_on:
+      - temporal
+    networks:
+        - netoto
+
+  atlas-migration:
+    image: arigaio/atlas:latest
+    container_name: oto-atlas-migration
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "${POSTGRES_PORT}:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-  temporal:
-    image: temporalio/temporal:latest
-    environment:
-      DB: postgresql
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PWD: ${POSTGRES_PASSWORD}
-      POSTGRES_SEEDS: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    command: >
+      migrate apply
+      --dir file://migrations --url postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
     depends_on:
       - postgres
+    volumes:
+      - ./migrations:/migrations
+    networks:
+      - netoto
+ 
+  oto-api:
+    container_name: oto-service-api
+    build:
+      context: .
+      dockerfile: cmd/api/Dockerfile
+    image: oto-api
     ports:
-      - "${TEMPORAL_PORT}:7233"
+      - "1515:1515"
+    networks:
+      - netoto
 
-  temporal-ui:
-    image: temporalio/ui:latest
+  oto-web:
+    container_name: oto-service-web
+    build:
+      context: .
+      dockerfile: cmd/web/Dockerfile
+    image: oto-web
     ports:
-      - "${TEMPORAL_UI_PORT}:8080"
-    environment:
-      TEMPORAL_ADDRESS: "temporal:7233"
-    depends_on:
-      - temporal
+      - "2929:2929"
+    networks:
+      - netoto
 
 volumes:
   pgdata:
+  pgadmin_data:
+
+networks:
+    netoto:
+        driver: bridge

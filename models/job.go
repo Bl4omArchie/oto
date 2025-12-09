@@ -1,10 +1,10 @@
 package models
 
 import (
+	"fmt"
 	"context"
 
 	"gorm.io/gorm"
-	"github.com/Bl4omArchie/simple"
 )
 
 
@@ -21,11 +21,6 @@ type FlagValue struct {
 	ParameterId  int		`gorm:"not null"`
 	Parameter    *Parameter	`gorm:"foreignKey:ParameterId"`
 	Value string			`gorm:"not null"`
-}
-
-type JobOutput struct {
-	Stdout string
-	Stderr string
 }
 
 
@@ -46,17 +41,36 @@ func NewFlagValue(param *Parameter, value string) *FlagValue {
 	}
 }
 
-func FetchJob(ctx context.Context, db *gorm.DB, column, jobName string) (*Job, error) {
-	job, err := simple.GetRowBy[Job](ctx, db, column, jobName)
+func FetchJob(ctx context.Context, db *gorm.DB, column, value any) (*Job, error) {
+	var job Job
+
+	err := db.WithContext(ctx).
+		Preload("Command").
+		Preload("Command.Executable").
+		Preload("FlagValues").
+		Preload("FlagValues.Parameter").
+		Where(fmt.Sprintf("%s = ?", column), value).
+		First(&job).Error
 	if err != nil {
 		return nil, err
 	}
 
-	cmd, err := FetchCommand(ctx, db, "ID", job.CommandId)
+	return &job, nil
+}
+
+func FetchJobs(ctx context.Context, db *gorm.DB, column, value any) ([]Job, error) {
+	var jobs []Job
+
+	err := db.WithContext(ctx).
+		Preload("Command").
+		Preload("Command.Executable").
+		Preload("FlagValues").
+		Preload("FlagValues.Parameter").
+		Where(fmt.Sprintf("%s = ?", column), value).
+		Find(&jobs).Error
 	if err != nil {
 		return nil, err
 	}
-	job.Command = cmd
 
-	return job, nil
+	return jobs, nil
 }

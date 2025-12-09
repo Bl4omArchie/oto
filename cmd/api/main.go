@@ -10,7 +10,7 @@ import (
 )
 
 func RunAPiServer(host, port string) {
-	cfg, err := oto.NewInstanceOto("../../db/storage.db")
+	cfg, err := oto.NewInstanceOto(".env")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -24,7 +24,7 @@ func main() {
     var host string    
     var port string      
  
-    flag.StringVar(&host, "h", "localhost", "Specify host. Default is localhost")
+    flag.StringVar(&host, "h", "0.0.0.0", "Specify host. Default is localhost")
     flag.StringVar(&port, "p", "8080", "Specify port number. Default is 8080")
 	
 	flag.Parse()
