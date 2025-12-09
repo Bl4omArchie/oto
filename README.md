@@ -11,7 +11,6 @@ OTO is a golang service for workflow automation. You can schedule executable exe
 - 1 workflow = several jobs
 
 
-
 # OTO guides
 
 Check **docs/** folder to read every guides.
@@ -45,7 +44,7 @@ Why Temporal ?
 # Atlas migration
 
 ```bash
-atlas schema inspect --env gorm --url postgres://oto-admin:1234@localhost:5432/oto-storage?sslmode=disable > schema.hcl
+atlas schema inspect --env gorm --url postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}?sslmode=disable > schema.hcl
 atlas migrate diff --env gorm 
 atlas migrate apply --dir file://migrations --url postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
 ```
