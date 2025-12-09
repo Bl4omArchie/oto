@@ -33,6 +33,7 @@ Follow those steps :
 1. Install Docker
 2. Create a .env file with the following variables :
 ```
+POSTGRES_HOST=postgres
 POSTGRES_DB=your_database
 POSTGRES_USERyour_user
 POSTGRES_PASSWORD=your_password
