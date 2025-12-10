@@ -24,7 +24,7 @@ data "external_schema" "gorm" {
 
 env "gorm" {
   src = data.external_schema.gorm.url
-  dev = "postgresql://${local.envfile["POSTGRES_USER"]}:${local.envfile["POSTGRES_PASSWORD"]}@${local.envfile["POSTGRES_HOST"]}:${local.envfile["POSTGRES_PORT"]}/${local.envfile["POSTGRES_DB"]}?sslmode=disable"
+  dev = "docker://postgres/16/dev"
   migration {
     dir = "file://migrations"
   }

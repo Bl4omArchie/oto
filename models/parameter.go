@@ -19,17 +19,18 @@ const (
 	Port      ValueType = "port"
 	None      ValueType = ""
 )
+
 type Parameter struct {
 	gorm.Model
-	Flag          string      `gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
-	Description   string      `gorm:"type:text"`
-	ExecutableTag string      `gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
-	Executable    *Executable `gorm:"foreignKey:ExecutableTag"`
-	RequiresRoot  bool        `gorm:"not null"`
-	RequiresValue bool        `gorm:"not null"`
-	ValueType     ValueType   `gorm:"not null"`
-	Require       []Parameter `gorm:"many2many:flag_dependencies;joinForeignKey:flag_id;joinReferences:requires_id"`
-	Interfer      []Parameter `gorm:"many2many:flag_conflicts;joinForeignKey:flag_id;joinReferences:interfer_id"`
+	Flag          string		`gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
+	Description   string		`gorm:"type:text"`
+	ExecutableID  int			`gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
+	Executable    *Executable	`gorm:"foreignKey:ExecutableID"`
+	RequiresRoot  bool			`gorm:"not null"`
+	RequiresValue bool			`gorm:"not null"`
+	ValueType     ValueType		`gorm:"not null"`
+	Require       []Parameter	`gorm:"many2many:flag_dependencies;joinForeignKey:flag_id;joinReferences:requires_id"`
+	Interfer      []Parameter	`gorm:"many2many:flag_conflicts;joinForeignKey:flag_id;joinReferences:interfer_id"`
 }
 
 type ParameterRaw struct {
@@ -48,7 +49,7 @@ type ParameterRaw struct {
 func NewParameter(flag, description string, exec *Executable, requiresRoot, requiresValue bool, valueType ValueType, require, interfer []Parameter) *Parameter {
 	return &Parameter{
 		Flag:          flag,
-		ExecutableTag: exec.Tag,
+		ExecutableID:  int(exec.ID),
 		Executable:    exec,
 		Description:   description,
 		RequiresRoot:  requiresRoot,

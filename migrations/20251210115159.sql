@@ -86,6 +86,8 @@ CREATE TABLE "public"."flag_values" (
 );
 -- Create index "idx_flag_values_deleted_at" to table: "flag_values"
 CREATE INDEX "idx_flag_values_deleted_at" ON "public"."flag_values" ("deleted_at");
+-- Create index "uid_flag_value" to table: "flag_values"
+CREATE UNIQUE INDEX "uid_flag_value" ON "public"."flag_values" ("parameter_id", "value");
 -- Create "jobs" table
 CREATE TABLE "public"."jobs" (
   "id" bigserial NOT NULL,

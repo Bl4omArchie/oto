@@ -46,7 +46,7 @@ Why Temporal ?
 ```bash
 atlas schema inspect --env gorm --url postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}?sslmode=disable > schema.hcl
 atlas migrate diff --env gorm 
-atlas migrate apply --dir file://migrations --url postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
+atlas migrate apply --env gorm -u postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
 ```
 
 # Roadmap
@@ -57,7 +57,7 @@ Current work :
 - [x] Write installation guide
 - [x] Update AddJob() for map parameter
 - [x] Demo with openSSL rsa keypair generation
-- [ ] Atlas for automatic database migration
-- [ ] Change ExecutableTag to ExecutableID in Parameter
+- [x] Atlas for automatic database migration
+- [x] Change ExecutableTag to ExecutableID in Parameter
 - [ ] Temporal integration : workflows
 - [ ] Temporal integration : scheduling

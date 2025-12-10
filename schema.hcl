@@ -212,10 +212,6 @@ table "flag_values" {
   index "idx_flag_values_deleted_at" {
     columns = [column.deleted_at]
   }
-  index "uid_flag_value" {
-    unique  = true
-    columns = [column.parameter_id, column.value]
-  }
 }
 table "job_flagvalues" {
   schema = schema.public

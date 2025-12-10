@@ -72,17 +72,17 @@ func NewInstanceOto(envPath string) (*Instance, error) {
 // === Add data ===
 
 func (i *Instance) AddExecutable(name, version, executablePath, description string) error {
-	bin := models.NewExecutable(name, version, executablePath, description)
-	if err := i.Database.Save(bin).Error; err != nil {
+	exec := models.NewExecutable(name, version, executablePath, description)
+	if err := i.Database.Save(exec).Error; err != nil {
 		return fmt.Errorf("failed to save Executable: %w", err)
 	}
 
 	return nil
 }
 
-func (i *Instance) AddParameter(ctx context.Context, binTag, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, Require, InterfersWith []string, s *fme.Schema) error {
+func (i *Instance) AddParameter(ctx context.Context, execTag, flag, description string, requiresRoot, requiresValue bool, valueType models.ValueType, Require, InterfersWith []string, s *fme.Schema) error {
 	// Retrieve executable
-	bin, err := models.FetchExecutable(ctx, i.Database, "tag", binTag)
+	exec, err := models.FetchExecutable(ctx, i.Database, "tag", execTag)
 	if err != nil {
 		return err
 	}
@@ -109,15 +109,15 @@ func (i *Instance) AddParameter(ctx context.Context, binTag, flag, description s
 		}
 	}
 
-	param := models.NewParameter(flag, description, bin, requiresRoot, requiresValue, valueType, InterfersWithToSave, RequireToSave)
+	param := models.NewParameter(flag, description, exec, requiresRoot, requiresValue, valueType, InterfersWithToSave, RequireToSave)
 	if err := i.Database.Save(param).Error; err != nil {
 		return fmt.Errorf("failed to parameter : %w", err)
 	}
 	return nil
 }
 
-func (i *Instance) AddCommand(ctx context.Context, binID, cmdName, description string, flags []string, s *fme.Schema) error {
-	bin, err := models.FetchExecutable(ctx, i.Database, "tag", binID)
+func (i *Instance) AddCommand(ctx context.Context, execID, cmdName, description string, flags []string, s *fme.Schema) error {
+	exec, err := models.FetchExecutable(ctx, i.Database, "tag", execID)
 	if err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func (i *Instance) AddCommand(ctx context.Context, binID, cmdName, description s
 		return err
 	}
 
-	cmd := models.NewCommand(cmdName, description, bin, flagsToSave)
+	cmd := models.NewCommand(cmdName, description, exec, flagsToSave)
 	if err := i.Database.Save(cmd).Error; err != nil {
 		return fmt.Errorf("failed to save command: %w", err)
 	}
@@ -217,15 +217,15 @@ func (i *Instance) RunJobDemo(ctx context.Context, jobName string) (*JobOutput, 
 
 
 // == FME ===
-func (i *Instance) AddExecutableSchema(ctx context.Context, binTag string) (*fme.Schema, error) {
+func (i *Instance) AddExecutableSchema(ctx context.Context, execTag string) (*fme.Schema, error) {
 	s := fme.NewSchema()
 
-	bin, err := models.FetchExecutable(ctx, i.Database, "tag", binTag)
+	exec, err := models.FetchExecutable(ctx, i.Database, "tag", execTag)
 	if err != nil {
 		return nil, err
 	}
 
-	params, err := models.FetchParameters(ctx, i.Database, "id", bin.ID)
+	params, err := models.FetchParameters(ctx, i.Database, "id", exec.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +244,7 @@ func (i *Instance) AddExecutableSchema(ctx context.Context, binTag string) (*fme
 	if err != nil {
 		return nil, err
 	}
-	i.ParamsSchema[binTag] = *s
+	i.ParamsSchema[execTag] = *s
 	return s, nil
 }
 
