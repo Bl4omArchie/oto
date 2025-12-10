@@ -248,6 +248,7 @@ func (i *Instance) AddExecutableSchema(ctx context.Context, execTag string) (*fm
 	return s, nil
 }
 
+
 // === Temporal ===
 func (i *Instance) NewWorkerItem(workerID string) WorkerItem {
 	return WorkerItem{
@@ -258,7 +259,7 @@ func (i *Instance) NewWorkerItem(workerID string) WorkerItem {
 }
 
 // Create a new worker with the given ID. The worker will then be runned concurrently.
-func (i *Instance) NewWorker(workerID string) error {
+func (i *Instance) AddWorker(workerID string) error {
 	if _, ok := i.Workers[workerID]; ok {
 		return fmt.Errorf("worker %s already.", workerID)
 	}
@@ -280,7 +281,7 @@ func (i *Instance) NewWorker(workerID string) error {
 	return nil
 }
 
-// Stop the worker. Every in-going tasks will be done, and then the worker will stop.
+// Stop the worker. Wait for in-going tasks to finish, and then the worker will stop.
 func (i *Instance) StopWorker(workerID string) error {
 	w, ok := i.Workers[workerID]
 	if !ok {
@@ -290,18 +291,6 @@ func (i *Instance) StopWorker(workerID string) error {
 	w.Worker.Stop()
 	return nil
 }
-
-// Resume the worker.
-func (i *Instance) ResumeWorker(workerID string) error {
-	w, ok := i.Workers[workerID]
-	if !ok {
-		return fmt.Errorf("couldn't find workerID. First create the worker.")
-	}
-
-	w.Worker.Stop()
-	return nil
-}
-
 
 func (i *Instance) RunJobWorkflow(ctx context.Context, jobName string) (*JobOutput, error) {
 	workflowOptions := client.StartWorkflowOptions{
