@@ -1,6 +1,16 @@
 # Changelog
 
 
+**10/12/25** :
+- Integration of Atlas for automatic database migration
+- DB update : [migrations/20251210120506.sql](migrations/20251210120506.sql)
+- Typo fix in oto.go (bin -> exec)
+
+**09/12/25** :
+- Pre-Release + demo with openSSL
+- User manual in docs/
+- Update docker compose
+
 **02/12/25** :
 - Add `envPath` parameter for NewInstanceOto() : you can now specify DB you want to use
 - ImportParameters() can import a json file of parameters into the DB
