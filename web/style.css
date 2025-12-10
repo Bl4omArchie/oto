@@ -2,13 +2,13 @@
 .main-content {
   flex: 1;
   padding: 1.5rem;
-  background-color: #f3f4f6; /* light */
+  background-color: #f3f4f6;
   color: #111827;
   overflow: auto;
   transition: background-color 0.3s, color 0.3s;
 }
 .dark .main-content {
-  background-color: #111827; /* dark */
+  background-color: #111827;
   color: #f9fafb;
 }
 
@@ -20,7 +20,7 @@
 
 /* Sidebar */
 .sidebar {
-  width: 16rem; /* 64 */
+  width: 16rem;
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -55,8 +55,6 @@
   flex-direction: column;
   gap: 0.5rem;
 }
-
-/* Sidebar links */
 .sidebar-link, .sidebar-btn {
   display: block;
   padding: 0.5rem 1rem;
@@ -147,6 +145,25 @@
   background-color: #1f2937;
   color: #f9fafb;
   box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+}
+
+/* Executable list styling */
+#executableList li {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+#executableList li p {
+  margin: 0;
+}
+.dark #executableList li {
+  background-color: #1f2937;
+  color: #f9fafb;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
 /* Scrollbar styling for dark mode */
