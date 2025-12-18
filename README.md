@@ -2,18 +2,14 @@
 
 OTO is a golang service for workflow automation. You can schedule executable execution, defined commands and jobs.
 
-- 1 executable = several parameters
-
-- several parameters = 1 command
-
-- 1 command with defined values = 1 job
-
-- 1 workflow = several jobs
+![intro](intro.png)
 
 
 # OTO guides
 
-Check **docs/** folder to read every guides.
+1. [Introduction to OTO](docs/1-introduction.md)
+2. [Launch required services](docs/2-services.md)
+3. [Try the demo](docs/3-code.md)
 
 
 # FME : flag matching engine
@@ -27,7 +23,7 @@ For instance if a command with parameter **b** won't work with parameter **a**, 
 
 OTO is now able to efficiently refuse such commands with the flag matching engine, a program that verify dependencies and conflict between parameters.
 
-Here si the full notebook for further details and in coming fearures [click here](https://github.com/Bl4omArchie/flag_matching)
+Here si the full notebook for further details and in coming fearures [click here](https://github.com/Bl4omArchie/fme)
 
 # Integration of Temporal
 
@@ -59,5 +55,10 @@ Current work :
 - [x] Demo with openSSL rsa keypair generation
 - [x] Atlas for automatic database migration
 - [x] Change ExecutableTag to ExecutableID in Parameter
+- [ ] Fix API
+- [ ] Add a higher api level for the API (user shouldn't have to add it)
 - [ ] Temporal integration : workflows
+    - [ ] Finish the activity RunJob
+    - [ ] Finish the workflow RunRoutine
 - [ ] Temporal integration : scheduling
+- [ ] Mock for database (https://github.com/DATA-DOG/go-sqlmock)

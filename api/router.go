@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/Bl4omArchie/oto/api/handlers"
@@ -22,19 +23,23 @@ func SetupRouter(cfg *oto.Instance) *gin.Engine {
 	}))
 
 	r.GET("/executables", func(c *gin.Context) {
-		handlers.GetExecutables(c, cfg)
+		if err := handlers.GetExecutables(c, cfg); err != nil {
+			fmt.Println(err)
+		}
 	})
 
-	r.GET("/executables/:execTag", func(c *gin.Context) {
-		value := c.Param("execTag")
-		handlers.GetExecutable(value, c, cfg)
+	r.GET("/executables/:execName", func(c *gin.Context) {
+		value := c.Param("execName")
+		if err := handlers.GetExecutable(value, c, cfg); err != nil {
+			fmt.Println(err)
+		}
 	})
 
-	r.GET("/params/:execTag", func(c *gin.Context) {
+	r.GET("/params/:execName", func(c *gin.Context) {
 		handlers.GetParameters(c, cfg)
 	})
 
-	r.GET("/cmds/:execTag", func(c *gin.Context) {
+	r.GET("/cmds/:execName", func(c *gin.Context) {
 		handlers.GetCommands(c, cfg)
 	})
 
@@ -42,14 +47,14 @@ func SetupRouter(cfg *oto.Instance) *gin.Engine {
 		handlers.GetJobs(c, cfg)
 	})
 
-	r.GET("/params/:execTag/:name", func(c *gin.Context) {
-		key := c.Param("execTag")
+	r.GET("/params/:execName/:name", func(c *gin.Context) {
+		key := c.Param("execName")
 		value := c.Param("name")
 		handlers.GetParameter(key, value, c, cfg)
 	})
 
-	r.GET("/cmds/:execTag/:name", func(c *gin.Context) {
-		key := c.Param("execTag")
+	r.GET("/cmds/:execName/:name", func(c *gin.Context) {
+		key := c.Param("execName")
 		value := c.Param("name")
 		handlers.GetCommand(key, value, c, cfg)
 	})

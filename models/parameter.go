@@ -20,28 +20,34 @@ const (
 	None      ValueType = ""
 )
 
+// A parameter is a simple flag that represent the arguments of an executable
+//
+// You should add every possible parameters for a given executable in order to create commands and jobs.
+//
+// FME concept : the flag matching engine allows to create dependencies between parameters (see readme).
 type Parameter struct {
 	gorm.Model
-	Flag          string		`gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
-	Description   string		`gorm:"type:text"`
-	ExecutableID  int			`gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
-	Executable    *Executable	`gorm:"foreignKey:ExecutableID"`
-	RequiresRoot  bool			`gorm:"not null"`
-	RequiresValue bool			`gorm:"not null"`
-	ValueType     ValueType		`gorm:"not null"`
-	Require       []Parameter	`gorm:"many2many:flag_dependencies;joinForeignKey:flag_id;joinReferences:requires_id"`
-	Interfer      []Parameter	`gorm:"many2many:flag_conflicts;joinForeignKey:flag_id;joinReferences:interfer_id"`
+	Flag          string      `gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
+	Description   string      `gorm:"type:text"`
+	ExecutableID  int         `gorm:"not null;uniqueIndex:uid_executable_parameter;not null"`
+	Executable    *Executable `gorm:"foreignKey:ExecutableID"`
+	RequiresRoot  bool        `gorm:"not null"`
+	RequiresValue bool        `gorm:"not null"`
+	ValueType     ValueType   `gorm:"not null"`
+	Require       []Parameter `gorm:"many2many:flag_dependencies;joinForeignKey:flag_id;joinReferences:requires_id"`
+	Interfer      []Parameter `gorm:"many2many:flag_conflicts;joinForeignKey:flag_id;joinReferences:interfer_id"`
 }
 
+// Special struct to represent a Parameter exported from a json file
 type ParameterRaw struct {
-	Flag          string    `json:"flag"`
-	Description   string    `json:"description"`
-	ExecutableTag string    `json:"executable_tag"`
-	RequiresRoot  bool      `json:"requires_root"`
-	RequiresValue bool      `json:"requires_value"`
-	ValueType     ValueType `json:"value_type"`
-	RequireIDs    []string  `json:"require_ids"`
-	InterferIDs   []string  `json:"interfer_ids"`
+	Flag           string    `json:"flag"`
+	Description    string    `json:"description"`
+	ExecutableName string    `json:"executable_tag"`
+	RequiresRoot   bool      `json:"requires_root"`
+	RequiresValue  bool      `json:"requires_value"`
+	ValueType      ValueType `json:"value_type"`
+	RequireIDs     []string  `json:"require_ids"`
+	InterferIDs    []string  `json:"interfer_ids"`
 }
 
 // Newmodels.Parameter returns a new models.Parameter with a flag, description, the corresponding Executable ID, if the flag needs root access or a value and the value type
@@ -60,16 +66,16 @@ func NewParameter(flag, description string, exec *Executable, requiresRoot, requ
 	}
 }
 
-func NewParameterRaw(flag, description, executableTag string, requiresRoot, requiresValue bool, valueType ValueType, require, interfer []string) *ParameterRaw {
+func NewParameterRaw(flag, description, executableName string, requiresRoot, requiresValue bool, valueType ValueType, require, interfer []string) *ParameterRaw {
 	return &ParameterRaw{
-		Flag:          flag,
-		Description:   description,
-		ExecutableTag: executableTag,
-		RequiresRoot:  requiresRoot,
-		RequiresValue: requiresValue,
-		ValueType:     valueType,
-		RequireIDs:    require,
-		InterferIDs:   interfer,
+		Flag:           flag,
+		Description:    description,
+		ExecutableName: executableName,
+		RequiresRoot:   requiresRoot,
+		RequiresValue:  requiresValue,
+		ValueType:      valueType,
+		RequireIDs:     require,
+		InterferIDs:    interfer,
 	}
 }
 

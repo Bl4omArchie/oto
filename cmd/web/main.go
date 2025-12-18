@@ -26,7 +26,7 @@ func main() {
  
     flag.StringVar(&host, "h", "localhost", "Specify host. Default is localhost")
     flag.StringVar(&port, "p", "9090", "Specify port number. Default is 9090")
-	flag.StringVar(&path, "path", "../../web/", "Specify the path of the OTO dashboard")
+	flag.StringVar(&path, "path", "web/", "Specify the path of the OTO dashboard")
 
 	flag.Parse()
  

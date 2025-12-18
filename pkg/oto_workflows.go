@@ -1,24 +1,25 @@
 package oto
 
-
 import (
 	"time"
 
+	"github.com/Bl4omArchie/oto/models"
 	"go.temporal.io/sdk/workflow"
 )
 
-func WorkflowRunJob(ctx workflow.Context, jobName string) (*JobOutput, error) {
+func WorkflowRunRoutine(ctx workflow.Context, routineName string) (*models.Output, error) {
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Minute,
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	var output JobOutput
-	err := workflow.ExecuteActivity(ctx, "RunCommand", jobName).Get(ctx, &output)
+	routine, err := models.FetchRoutine(ctx, "")
+
+	var output models.Output
+	err = workflow.ExecuteActivity(ctx, "RunCommand", routineName).Get(ctx, &output)
 	if err != nil {
 		return nil, err
 	}
 
 	return &output, nil
 }
-

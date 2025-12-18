@@ -2,12 +2,16 @@ package models
 
 import (
 	"fmt"
+	"time"
 	"context"
 
 	"gorm.io/gorm"
 )
 
 
+// A job is a command with pre-defined values
+//
+// In order to create a Job, you must specify the command name and fill structs called FlagValue which is a key-value combination between parameter flag and its value
 type Job struct {
 	gorm.Model
 	Name       string       `gorm:"unique;not null"`
@@ -18,9 +22,18 @@ type Job struct {
 
 type FlagValue struct {
 	gorm.Model
-	ParameterId  int		`gorm:"not null;uniqueIndex:uid_flag_value"`
-	Parameter    *Parameter	`gorm:"foreignKey:ParameterId"`
-	Value string			`gorm:"not null;uniqueIndex:uid_flag_value"`
+	ParameterId int			`gorm:"not null;uniqueIndex:uid_flag_value"`
+	Parameter	*Parameter	`gorm:"foreignKey:ParameterId"`
+	Value		string		`gorm:"not null;uniqueIndex:uid_flag_value"`
+}
+
+type Output struct {
+	gorm.Model
+	JobId int			`gorm:"not null"`
+	Job *Job			`gorm:"foreignKey:JobId"`
+	Timestamp time.Time	`gorm:"not null"`
+	Stdout string		`gorm:"not null"`
+	Stderr string		`gorm:"not null"`
 }
 
 
@@ -38,6 +51,16 @@ func NewFlagValue(param *Parameter, value string) *FlagValue {
 		ParameterId: int(param.ID),
 		Parameter: param,
 		Value: value,
+	}
+}
+
+func NewOutput(job *Job, timestamp time.Time, stdout, stderr string) *Output {
+	return &Output{
+		JobId: int(job.CommandId),
+		Job: job,
+		Timestamp: timestamp,
+		Stdout: stdout,
+		Stderr: stderr,
 	}
 }
 

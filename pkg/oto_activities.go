@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"os/exec"
+	"time"
 
 	"github.com/Bl4omArchie/oto/models"
 	"gorm.io/gorm"
@@ -13,14 +14,8 @@ type Activities struct {
 	DB *gorm.DB
 }
 
-type (
-	JobOutput struct {
-		Stdout string
-		Stderr string
-	}
-)
 
-func (a *Activities) RunJob(ctx context.Context, jobName string) (*JobOutput, error) {
+func (a *Activities) RunJob(ctx context.Context, jobName string) (*models.Output, error) {
 	job, err := models.FetchJob(ctx, a.DB, "name", jobName)
 	if err != nil {
 		return nil, err
@@ -43,8 +38,5 @@ func (a *Activities) RunJob(ctx context.Context, jobName string) (*JobOutput, er
 	cmd.Stderr = &stderr
 
 	err = cmd.Run()
-	return &JobOutput{
-		Stdout: stdout.String(),
-		Stderr: stderr.String(),
-	}, err
+	return models.NewOutput(job, time.Now(), stdout.String(), stderr.String()), err
 }

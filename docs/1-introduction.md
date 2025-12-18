@@ -38,7 +38,7 @@ Lets generate an RSA keypair with **openSSL** as an example.
 You have an executable called openSSL version 3.5.3 defined as follow :
 ```go
 var openssl Executable {
-    Tag : "openssl - 3.5.3"
+    Name : "openssl - 3.5.3"
     Name: "openssl"
     Version: "3.5.3"
     Path: "/usr/bin/openssl"
@@ -56,13 +56,13 @@ To do so, we want to ingest the following parameters : **genpkey** **-algorithm*
 
 We defined them as follow :
 ```go
-var param1 Parameter = {Flag: "genpkey", Description: "generate keypair", ExecutableTag: "openssl - 3.5.3", RequiresRoot: false, RequiresValue: false, ValueType: None}
+var param1 Parameter = {Name: "genpkey", Description: "generate keypair", ExecutableName: "openssl - 3.5.3", RequiresRoot: false, RequiresValue: false, ValueType: None}
 
-var param2 Parameter = {Flag: "-algorithm", Description: "select a cryptosystem", ExecutableTag: "openssl - 3.5.3", RequiresRoot: false, RequiresValue: true, ValueType: String}
+var param2 Parameter = {Name: "-algorithm", Description: "select a cryptosystem", ExecutableName: "openssl - 3.5.3", RequiresRoot: false, RequiresValue: true, ValueType: String}
 
-var param3 Parameter = {Flag: "-pkeyopt", Description: "define keypair options (i.e : size in bits)", ExecutableTag: "openssl - 3.5.3", RequiresRoot: false, RequiresValue: true, ValueType: String}
+var param3 Parameter = {Name: "-pkeyopt", Description: "define keypair options (i.e : size in bits)", ExecutableName: "openssl - 3.5.3", RequiresRoot: false, RequiresValue: true, ValueType: String}
 
-var param4 Parameter = {Flag: "-out", Description: "filepath for key storage", ExecutableTag: "openssl - 3.5.3", RequiresRoot: false, RequiresValue: true, ValueType: FilePath}
+var param4 Parameter = {Name: "-out", Description: "filepath for key storage", ExecutableName: "openssl - 3.5.3", RequiresRoot: false, RequiresValue: true, ValueType: FilePath}
 ```
 
 ### 3. Define a command
@@ -72,7 +72,7 @@ Now we take our parameters and build our command :
 var cmd Command = {
     Name: "GenRSA"
     Description: "Generate an rsa keypair"
-    ExecutableTag: "openssl - 3.5.3"
+    ExecutableName: "openssl - 3.5.3"
     RequiresRoot: false
     Parameters: {param1, param2, param3, param4}   
 }

@@ -3,6 +3,7 @@ FROM golang:1.25.4-alpine AS build
 WORKDIR /app
 
 COPY . /app
+
 RUN go build -o oto-web ./cmd/web
 
 EXPOSE 2929

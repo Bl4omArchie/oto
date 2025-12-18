@@ -41,7 +41,7 @@ func GetCommands(c *gin.Context, oto *oto.Instance) {
 	c.JSON(http.StatusOK, cmds)
 }
 
-func GetCommand(execTag string, cmdName string, c *gin.Context, oto *oto.Instance) {
+func GetCommand(execName string, cmdName string, c *gin.Context, oto *oto.Instance) {
 	cmd, err := simple.GetRowBy[models.Command](c, oto.Database, "name", cmdName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get command": err.Error()})

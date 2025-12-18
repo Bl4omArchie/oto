@@ -1,5 +1,11 @@
 # Changelog
 
+**15/12/25** :
+- Correction into README
+- Add comments above functions in oto.go for clarity
+- Add new feature called Routine. Your now able to decide of the order of execution of your jobs.
+- Done with the temporal workflow : RunRoutine
+- Changed the initial workflow name RunJob to RunRoutine
 
 **10/12/25** :
 - Integration of Atlas for automatic database migration

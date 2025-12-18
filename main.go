@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 
 	_ "github.com/Bl4omArchie/oto/models"
 	oto "github.com/Bl4omArchie/oto/pkg"
@@ -65,7 +65,7 @@ func full_data() error {
 	if err != nil {
 		return err
 	}
-	
+
 	if err := instance.AddJob(ctx, "GenRSA", "GenRSA-2048", map[string]string{"genpkey": "", "-algorithm": "RSA", "-pkeyopt": "rsa_keygen_bits:2048", "-out": "key.pem"}); err != nil {
 		return err
 	}
@@ -128,17 +128,11 @@ func test() error {
 		return err
 	}
 
-	out, err := instance.RunJobDemo(ctx, "GenRSA-2048")
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(out.Stderr, out.Stdout)
+	instance.AddRoutine(ctx, "test_routine", "")
 
 	return nil
 }
 
-
 func main() {
-	fmt.Println(launch_demo())
+	fmt.Println(test())
 }

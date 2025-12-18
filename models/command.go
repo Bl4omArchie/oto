@@ -7,6 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
+
+// A command is a groupment of parameters
+//
 type Command struct {
 	gorm.Model
 	Name         string      `gorm:"unique;not null"`
@@ -17,12 +20,13 @@ type Command struct {
 	Parameters   []Parameter `gorm:"many2many:command_parameters"`
 }
 
-func NewCommand(cmdName, description string, exec *Executable, flags []Parameter) *Command {
+func NewCommand(cmdName, description string, exec *Executable, requiresRoot bool, flags []Parameter) *Command {
 	return &Command{
 		Name:         cmdName,
+		Description:  description,
 		ExecutableID: int(exec.ID),
 		Executable:   *exec,
-		Description:  description,
+		RequiresRoot: requiresRoot,
 		Parameters:   flags,
 	}
 }

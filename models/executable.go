@@ -1,5 +1,7 @@
 package models
 
+
+
 import (
 	"context"
 	"fmt"
@@ -8,6 +10,14 @@ import (
 	"gorm.io/gorm"
 )
 
+
+// A executable is a binary with the execution rigth
+//
+// In order to create a new executable, you must specify its path and version
+//
+// You can find most of your installed executable like openssl, nmap etc in /usr/bin
+//
+// The executable Tag is the name and version combined into string (i.e : oppenssl - v3.5.3) in order to avoid confusion between different versions for a same executable
 type Executable struct {
 	gorm.Model
 	Tag         string `gorm:"unique; not null type:string"`

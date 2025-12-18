@@ -32,20 +32,22 @@ func CreateExecutable(c *gin.Context, cfg *oto.Instance) {
 	c.JSON(http.StatusOK, executable)
 }
 
-func GetExecutables(c *gin.Context, cfg *oto.Instance) {
+func GetExecutables(c *gin.Context, cfg *oto.Instance) error {
 	executables, err := simple.GetTable[models.Executable](c, cfg.Database, -1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get Executables": err.Error()})
-		return
+		return err
 	}
 	c.JSON(http.StatusOK, executables)
+	return nil
 }
 
-func GetExecutable(binTag string, c *gin.Context, cfg *oto.Instance) {
-	executable, err := simple.GetRowBy[models.Executable](c, cfg.Database, "tag", binTag)
+func GetExecutable(binName string, c *gin.Context, cfg *oto.Instance) error {
+	executable, err := simple.GetRowBy[models.Executable](c, cfg.Database, "tag", binName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error, couldn't get Executable": err.Error()})
-		return
+		return err
 	}
 	c.JSON(http.StatusOK, executable)
+	return nil
 }
